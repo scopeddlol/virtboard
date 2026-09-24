@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "settings": {
+    "inputDeviceId": "yeti", "inputDeviceLabel": "Microphone (Blue Yeti)",
+    "virtualDeviceId": "cable", "virtualDeviceLabel": "CABLE Input (VB-Audio Virtual Cable)",
+    "monitorDeviceId": "arctis", "monitorDeviceLabel": "Headphones (Arctis 7 Game)",
+    "micVolume": 1, "soundsVolume": 0.8, "monitorVolume": 0.7, "micMuted": false,
+    "monitorSounds": true, "monitorVoice": false, "voiceEnabled": false, "activePresetId": "deep",
+    "noiseSuppression": true, "echoCancellation": false, "closeToTray": true, "startMinimized": false,
+    "launchOnStartup": false, "accent": "#8b5cf6", "onboarded": true,
+    "hotkeys": { "stopAll": "Ctrl+Alt+End", "toggleMic": "Ctrl+Alt+M", "toggleVoice": "Ctrl+Alt+V", "nextPage": "Ctrl+Alt+PageDown", "prevPage": "Ctrl+Alt+PageUp", "toggleWindow": "Ctrl+Alt+B" }
+  },
+  "presets": []
+}
