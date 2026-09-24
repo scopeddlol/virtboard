@@ -3,7 +3,7 @@ import { Toaster, toast } from 'sonner'
 import type { HotkeyAction, TrayAction } from '@shared/types'
 import { engine } from '@/audio/engine'
 import { api } from '@/lib/api'
-import { isVirtualOutput, listDevices } from '@/lib/devices'
+import { isLoopbackInput, isVirtualOutput, listDevices } from '@/lib/devices'
 import { activePreset, startPersistence, useStore } from '@/state/store'
 import { TitleBar } from '@/components/TitleBar'
 import { Sidebar } from '@/components/Sidebar'
@@ -66,6 +66,12 @@ async function reconcileDevices() {
     if (byLabel) patch[idKey] = byLabel.deviceId
   }
   fix(d.inputs, settings.inputDeviceId, settings.inputDeviceLabel, 'inputDeviceId')
+  // A virtual cable saved as "the mic" is a feedback loop — go back to automatic.
+  const savedInput = d.inputs.find((x) => x.deviceId === (patch.inputDeviceId ?? settings.inputDeviceId))
+  if (savedInput && savedInput.deviceId !== 'default' && isLoopbackInput(savedInput.label)) {
+    patch.inputDeviceId = 'default'
+    patch.inputDeviceLabel = ''
+  }
   fix(d.outputs, settings.virtualDeviceId, settings.virtualDeviceLabel, 'virtualDeviceId')
   fix(d.outputs, settings.monitorDeviceId, settings.monitorDeviceLabel, 'monitorDeviceId')
   if (!settings.virtualDeviceId) {
@@ -156,6 +162,19 @@ export function App() {
       if (s.presets !== prev.presets || s.settings.activePresetId !== prev.settings.activePresetId) engine.setVoiceParams(activePreset(s).params)
     })
   }, [loaded])
+
+  // Tell the user (once per change) when their mic can't be used or had to be swapped.
+  useEffect(() => {
+    let last = ''
+    const off = engine.subscribe(() => {
+      const msg = engine.micError ?? engine.micNotice ?? ''
+      if (msg === last) return
+      last = msg
+      if (engine.micError) toast.error('Microphone not working', { description: engine.micError, duration: 10000 })
+      else if (engine.micNotice) toast.warning('Switched microphone', { description: engine.micNotice, duration: 10000 })
+    })
+    return () => void off()
+  }, [])
 
   useEffect(() => {
     document.documentElement.style.setProperty('--accent', accent)

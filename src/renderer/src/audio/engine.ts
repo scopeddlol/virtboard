@@ -1,6 +1,7 @@
 import type { Settings, Sound, VoiceParams } from '@shared/types'
 import { api } from '@/lib/api'
 import { NEUTRAL } from '@/lib/defaults'
+import { chooseMic, ensurePermission, isLoopbackInput } from '@/lib/devices'
 
 /**
  * Virtboard's audio graph (everything runs natively in Chromium's audio thread):
@@ -87,6 +88,8 @@ class Engine {
   private monitorBus!: GainNode
   private monitorVol!: GainNode
   micAnalyser!: AnalyserNode
+  /** Raw mic straight off the device, before mute / volume / effects — for "is my mic even arriving?" */
+  inputAnalyser!: AnalyserNode
   soundsAnalyser!: AnalyserNode
 
   private buffers = new Map<string, AudioBuffer>()
@@ -97,7 +100,12 @@ class Engine {
   private voiceParams: VoiceParams = NEUTRAL
   private reverbSize = 0
   private micKey = ''
+  private micQueue: Promise<void> = Promise.resolve()
   micError: string | null = null
+  /** Why we're not using the device the user (or Windows) picked, e.g. it was the virtual cable. */
+  micNotice: string | null = null
+  /** Label of the device actually being captured. */
+  micDevice = ''
 
   init() {
     if (this.ready) return this.ready
@@ -128,6 +136,8 @@ class Engine {
     this.micAnalyser = ctx.createAnalyser()
     this.micAnalyser.fftSize = 512
     this.micAnalyser.smoothingTimeConstant = 0.6
+    this.inputAnalyser = ctx.createAnalyser()
+    this.inputAnalyser.fftSize = 512
     this.soundsAnalyser = ctx.createAnalyser()
     this.soundsAnalyser.fftSize = 512
 
@@ -183,10 +193,7 @@ class Engine {
     this.monitorCtx.createMediaStreamSource(bridge.stream).connect(this.monitorVol).connect(this.monitorCtx.destination)
 
     navigator.mediaDevices.addEventListener('devicechange', () => {
-      if (this.settings) {
-        this.micKey = ''
-        this.applySettings(this.settings)
-      }
+      if (this.settings) this.openMic(this.settings)
     })
     const resume = () => {
       if (ctx.state !== 'running') ctx.resume()
@@ -218,29 +225,87 @@ class Engine {
     }
   }
 
-  private async openMic(s: Settings) {
-    const key = [s.inputDeviceId, s.noiseSuppression, s.echoCancellation].join('|')
-    if (key === this.micKey) return
-    this.micKey = key
-    this.micStream?.getTracks().forEach((t) => t.stop())
-    this.micSource?.disconnect()
-    this.micSource = null
+  /** Mic (re)opens run one at a time — overlapping getUserMedia calls used to leak live streams. */
+  private openMic(s: Settings, force = false) {
+    this.micQueue = this.micQueue.then(() => this.doOpenMic(s, force)).catch((e) => console.warn('[virtboard] mic', e))
+    return this.micQueue
+  }
+
+  private closeMic() {
+    this.micStream?.getTracks().forEach((t) => {
+      t.onended = null
+      t.stop()
+    })
+    this.micStream = null
     try {
-      const constraints: MediaTrackConstraints = {
+      this.micSource?.disconnect()
+    } catch {
+      /* not connected */
+    }
+    this.micSource = null
+  }
+
+  private async doOpenMic(s: Settings, force: boolean) {
+    // Labels (needed to spot the virtual cable) only appear once mic permission is granted.
+    await ensurePermission()
+    const inputs = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === 'audioinput')
+    const choice = chooseMic(inputs, s.inputDeviceId)
+    const key = [choice.deviceId, s.noiseSuppression, s.echoCancellation].join('|')
+    if (!force && key === this.micKey && this.micStream?.active) return
+    this.closeMic()
+    this.micKey = key
+    this.micNotice = choice.notice
+    this.micDevice = ''
+    try {
+      if (choice.notice && !choice.deviceId) throw new Error('No microphone found')
+      const base: MediaTrackConstraints = {
         echoCancellation: s.echoCancellation,
         noiseSuppression: s.noiseSuppression,
         autoGainControl: false,
-        channelCount: 1,
-        sampleRate: 48000,
+        channelCount: { ideal: 1 },
       }
-      if (s.inputDeviceId && s.inputDeviceId !== 'default') constraints.deviceId = { ideal: s.inputDeviceId }
-      this.micStream = await navigator.mediaDevices.getUserMedia({ audio: constraints })
-      this.micSource = this.ctx.createMediaStreamSource(this.micStream)
+      let stream: MediaStream
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: choice.deviceId ? { ...base, deviceId: { exact: choice.deviceId } } : base,
+        })
+      } catch (e) {
+        // Saved device vanished (unplugged, NVIDIA Broadcast restarting…) — fall back to a sensible real mic.
+        const name = (e as DOMException)?.name
+        if (!choice.deviceId || (name !== 'OverconstrainedError' && name !== 'NotFoundError')) throw e
+        const fallback = chooseMic(inputs.filter((d) => d.deviceId !== choice.deviceId), 'default')
+        if (!fallback.deviceId && fallback.notice) throw e
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: fallback.deviceId ? { ...base, deviceId: { exact: fallback.deviceId } } : base,
+        })
+      }
+      const track = stream.getAudioTracks()[0]
+      // Last line of defence: never feed Virtboard's own output back into itself.
+      if (!track || isLoopbackInput(track.label)) {
+        stream.getTracks().forEach((t) => t.stop())
+        throw new Error(`“${track?.label ?? 'That device'}” is Virtboard's own output, not a microphone. Pick your real mic in Settings.`)
+      }
+      track.onended = () => {
+        // Device unplugged or its driver restarted — try to get it back.
+        if (this.micStream === stream && this.settings) this.openMic(this.settings, true)
+      }
+      this.micStream = stream
+      this.micDevice = track.label || choice.label
+      this.micSource = this.ctx.createMediaStreamSource(stream)
       this.micError = null
       this.routeVoice()
     } catch (e) {
-      this.micError = e instanceof Error ? e.message : String(e)
+      this.closeMic()
       this.micKey = ''
+      const name = (e as DOMException)?.name
+      this.micError =
+        name === 'NotAllowedError'
+          ? 'Microphone access is blocked. Turn on “Let desktop apps access your microphone” in Windows privacy settings.'
+          : name === 'NotReadableError'
+            ? 'Your microphone is being used exclusively by another app. Turn off “Allow applications to take exclusive control” in the mic’s Windows sound properties.'
+            : e instanceof Error
+              ? e.message
+              : String(e)
       console.warn('[virtboard] microphone unavailable', e)
     }
     this.emit()
@@ -258,6 +323,7 @@ class Engine {
       /* not connected */
     }
     this.micSource.connect(on ? this.fxInput : this.bypass)
+    this.micSource.connect(this.inputAnalyser)
   }
 
   setVoiceParams(p: VoiceParams) {
@@ -307,10 +373,12 @@ class Engine {
     this.localSounds.gain.setTargetAtTime(s.monitorSounds ? 1 : 0, t, 0.02)
     this.monitorVoice.gain.setTargetAtTime(s.monitorVoice ? 1 : 0, t, 0.02)
     this.monitorVol.gain.setTargetAtTime(s.monitorVolume, this.monitorCtx.currentTime, 0.02)
-    if (!prev || prev.virtualDeviceId !== s.virtualDeviceId) await this.setSink(this.ctx, s.virtualDeviceId)
+    const sinkChanged = !prev || prev.virtualDeviceId !== s.virtualDeviceId
+    if (sinkChanged) await this.setSink(this.ctx, s.virtualDeviceId)
     if (!prev || prev.monitorDeviceId !== s.monitorDeviceId) await this.setSink(this.monitorCtx, s.monitorDeviceId || 'default')
     if (!prev || prev.voiceEnabled !== s.voiceEnabled) this.routeVoice()
-    await this.openMic(s)
+    // Re-open after the output moves: Chromium can leave an existing mic source silent across setSinkId.
+    await this.openMic(s, !!prev && sinkChanged)
   }
 
   // ------------------------------------------------------------ sounds ---

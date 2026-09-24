@@ -1,11 +1,12 @@
 import { useEffect, useRef } from 'react'
-import { Headphones, Mic, MicOff, Music2, Square } from 'lucide-react'
+import { AlertTriangle, Headphones, Mic, MicOff, Music2, Square } from 'lucide-react'
 import { engine } from '@/audio/engine'
 import { useStore } from '@/state/store'
+import { useMicStatus } from '@/lib/mic'
 import { cn, Slider, Tip } from './ui'
 
 /** Level meter driven straight from an AnalyserNode (no React re-renders). */
-export function Meter({ source, className }: { source: 'mic' | 'sounds'; className?: string }) {
+export function Meter({ source, className }: { source: 'mic' | 'sounds' | 'input'; className?: string }) {
   const bar = useRef<HTMLDivElement>(null)
   useEffect(() => {
     const buf = new Float32Array(512)
@@ -14,7 +15,7 @@ export function Meter({ source, className }: { source: 'mic' | 'sounds'; classNa
     const tick = () => {
       raf = requestAnimationFrame(tick)
       if (document.hidden) return
-      const raw = engine.level(source === 'mic' ? engine.micAnalyser : engine.soundsAnalyser, buf)
+      const raw = engine.level(source === 'mic' ? engine.micAnalyser : source === 'input' ? engine.inputAnalyser : engine.soundsAnalyser, buf)
       const db = raw > 0 ? 20 * Math.log10(raw) : -90
       const v = Math.max(0, Math.min(1, (db + 60) / 60))
       level = v > level ? v : level * 0.9 + v * 0.1
@@ -58,20 +59,30 @@ export function Mixer() {
   const s = useStore((st) => st.settings)
   const setSettings = useStore((st) => st.setSettings)
   const toggleMic = useStore((st) => st.toggleMic)
+  const setView = useStore((st) => st.setView)
+  const mic = useMicStatus()
 
   return (
     <footer className="flex h-16 shrink-0 items-center gap-6 border-t border-line bg-base px-4">
       <Channel
-        title={s.micMuted ? 'Microphone (muted)' : 'Microphone'}
+        title={mic.error ? 'Microphone (not working)' : s.micMuted ? 'Microphone (muted)' : 'Microphone'}
         value={s.micVolume}
         onChange={(v) => setSettings({ micVolume: v })}
         meter="mic"
         icon={
-          <Tip label={s.micMuted ? 'Unmute' : 'Mute'}>
-            <button onClick={toggleMic} className={iconBtn(true, s.micMuted)}>
-              {s.micMuted ? <MicOff size={16} /> : <Mic size={16} />}
-            </button>
-          </Tip>
+          mic.error ? (
+            <Tip label={`${mic.error} Click to open Settings.`}>
+              <button onClick={() => setView('settings')} className={iconBtn(true, true)}>
+                <AlertTriangle size={16} />
+              </button>
+            </Tip>
+          ) : (
+            <Tip label={s.micMuted ? 'Unmute' : `Mute · ${mic.device || 'microphone'}`}>
+              <button onClick={toggleMic} className={iconBtn(true, s.micMuted)}>
+                {s.micMuted ? <MicOff size={16} /> : <Mic size={16} />}
+              </button>
+            </Tip>
+          )
         }
       />
       <Channel

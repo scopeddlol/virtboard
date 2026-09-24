@@ -110,7 +110,7 @@ export function Switch({ checked, onChange, disabled }: { checked: boolean; onCh
 export function Select({
   value, onChange, options, placeholder, className,
 }: {
-  value: string; onChange: (v: string) => void; options: { value: string; label: string; hint?: string }[]
+  value: string; onChange: (v: string) => void; options: { value: string; label: string; hint?: string; disabled?: boolean }[]
   placeholder?: string; className?: string
 }) {
   return (
@@ -131,7 +131,8 @@ export function Select({
               <RSelect.Item
                 key={o.value}
                 value={o.value}
-                className="relative flex cursor-pointer items-center rounded py-1.5 pl-7 pr-2.5 text-[13px] text-zinc-300 outline-none data-[highlighted]:bg-white/[0.07] data-[highlighted]:text-white"
+                disabled={o.disabled}
+                className="relative flex cursor-pointer items-center rounded py-1.5 pl-7 pr-2.5 text-[13px] text-zinc-300 outline-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-40 data-[highlighted]:bg-white/[0.07] data-[highlighted]:text-white"
               >
                 <RSelect.ItemIndicator className="absolute left-2"><Check size={13} /></RSelect.ItemIndicator>
                 <RSelect.ItemText>{o.label}</RSelect.ItemText>

@@ -3,7 +3,9 @@ import { toast } from 'sonner'
 import type { Hotkeys } from '@shared/types'
 import { api } from '@/lib/api'
 import { ACCENTS } from '@/lib/defaults'
-import { deviceLabel, isVirtualOutput, useDevices } from '@/lib/devices'
+import { deviceLabel, isLoopbackInput, isVirtualOutput, useDevices } from '@/lib/devices'
+import { useMicStatus } from '@/lib/mic'
+import { Meter } from '@/components/Mixer'
 import { findConflict } from '@/lib/conflicts'
 import { persisted, useStore } from '@/state/store'
 import { HotkeyInput } from '@/components/HotkeyInput'
@@ -31,6 +33,29 @@ function Row({ title, description, children }: { title: string; description?: st
   )
 }
 
+function MicStatusCard({ device, notice, error }: { device: string; notice: string | null; error: string | null }) {
+  const tone = error ? 'bg-red-500' : notice ? 'bg-amber-500' : device ? 'bg-emerald-500' : 'bg-zinc-600'
+  return (
+    <div className="ml-[196px] rounded-md border border-line bg-panel px-3.5 py-3 text-[12.5px] leading-relaxed">
+      <div className="flex items-center gap-3">
+        <span className={cn('h-1.5 w-1.5 shrink-0 rounded-full', tone)} />
+        <span className="min-w-0 flex-1 truncate text-zinc-400">
+          {error ? (
+            <span className="text-red-300">Microphone not working</span>
+          ) : device ? (
+            <>Listening to <span className="text-zinc-200">{device}</span></>
+          ) : (
+            'Opening microphone…'
+          )}
+        </span>
+        {!error && device && <Meter source="input" className="w-24" />}
+      </div>
+      {(error || notice) && <p className={cn('mt-1.5 pl-[18px]', error ? 'text-red-300/80' : 'text-amber-300/80')}>{error ?? notice}</p>}
+      {!error && device && <p className="mt-1 pl-[18px] text-zinc-500">Talk — the bar should move. If it doesn't, check your mic isn't muted in Windows.</p>}
+    </div>
+  )
+}
+
 const HOTKEY_ROWS: { key: keyof Hotkeys; title: string }[] = [
   { key: 'stopAll', title: 'Stop all sounds' },
   { key: 'toggleMic', title: 'Mute / unmute microphone' },
@@ -52,7 +77,12 @@ export function Settings() {
   }, [])
 
   const cable = devices.outputs.find((d) => isVirtualOutput(d.label))
-  const inputs = devices.inputs.map((d) => ({ value: d.deviceId, label: deviceLabel(d) }))
+  const mic = useMicStatus()
+  // The cable's recording side is Virtboard's own output — picking it as the mic makes a feedback loop.
+  const inputs = devices.inputs.map((d) => {
+    const loop = isLoopbackInput(d.label)
+    return { value: d.deviceId, label: deviceLabel(d), disabled: loop && d.deviceId !== 'default', hint: loop ? 'Virtboard’s output' : undefined }
+  })
   const outputs = devices.outputs.map((d) => ({ value: d.deviceId, label: deviceLabel(d) }))
   const pick = (list: MediaDeviceInfo[], id: string) => list.find((d) => d.deviceId === id)?.label ?? ''
 
@@ -86,6 +116,7 @@ export function Settings() {
             'Your real mic',
             <Select value={s.inputDeviceId} options={inputs} onChange={(id) => setSettings({ inputDeviceId: id, inputDeviceLabel: pick(devices.inputs, id) })} />,
           )}
+          <MicStatusCard device={mic.device} notice={mic.notice} error={mic.error} />
           {field(
             'Virtual mic output',
             'Usually “CABLE Input”',
