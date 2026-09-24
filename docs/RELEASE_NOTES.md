@@ -2,7 +2,7 @@
 
 The first release of **Virtboard**, a soundboard and real-time voice changer for Windows that plays into Discord, games and OBS through a virtual microphone.
 
-![Virtboard](https://raw.githubusercontent.com/scopeddlol/virtboard/HEAD/docs/demo.gif)
+![Virtboard](https://raw.githubusercontent.com/scopeddlol/virtboard/v0.1/docs/demo.gif)
 
 ## Highlights
 
