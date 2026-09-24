@@ -1,0 +1,68 @@
+@import 'tailwindcss';
+
+:root {
+  --accent: #7c6cf0;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: 'Inter Variable', 'Segoe UI Emoji', 'Noto Color Emoji', 'Segoe UI', system-ui, sans-serif;
+  --color-accent: var(--accent);
+  --color-base: #111113;
+  --color-panel: #18181b;
+  --color-raised: #1f1f23;
+  --color-line: rgb(255 255 255 / 0.07);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  background: var(--color-base);
+  color: #e4e4e7;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--accent) 40%, transparent);
+}
+
+.drag {
+  -webkit-app-region: drag;
+}
+.no-drag {
+  -webkit-app-region: no-drag;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 0.08);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+input[type='text'],
+input:not([type]) {
+  user-select: text;
+}
+
+[part~='region-handle'] {
+  border-color: var(--accent) !important;
+  border-width: 2px !important;
+}

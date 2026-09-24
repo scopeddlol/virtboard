@@ -1,0 +1,45 @@
+appId: com.virtboard.app
+productName: Virtboard
+copyright: Copyright © 2026 scopeddlol
+directories:
+  output: release
+  buildResources: build
+files:
+  - out/**/*
+  - package.json
+  - '!**/*.map'
+extraResources:
+  - from: resources
+    to: icons
+asar: true
+compression: maximum
+# Only ship the English locale pak → noticeably smaller install.
+electronLanguages:
+  - en-US
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: build/icon.ico
+  executableName: Virtboard
+  artifactName: Virtboard-Setup-${version}.${ext}
+nsis:
+  oneClick: false
+  perMachine: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: Virtboard
+  uninstallDisplayName: Virtboard
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  installerHeaderIcon: build/icon.ico
+  installerSidebar: build/installerSidebar.bmp
+  uninstallerSidebar: build/uninstallerSidebar.bmp
+  installerHeader: build/installerHeader.bmp
+  license: LICENSE
+  include: build/installer.nsh
+  runAfterFinish: true
+  deleteAppDataOnUninstall: false
+publish: null
