@@ -1,7 +1,5 @@
 import { useEffect } from 'react'
-import { AnimatePresence, motion } from 'motion/react'
 import { Toaster, toast } from 'sonner'
-import { Cable, Keyboard, MessageSquareText, Rocket } from 'lucide-react'
 import type { HotkeyAction, TrayAction } from '@shared/types'
 import { engine } from '@/audio/engine'
 import { api } from '@/lib/api'
@@ -27,7 +25,7 @@ function handleAction(a: HotkeyAction | TrayAction) {
     case 'page': {
       s.setActivePage(a.id)
       const p = s.pages.find((x) => x.id === a.id)
-      if (p) toast(`${p.emoji} ${p.name}`, { description: 'Page keybinds active', duration: 1400 })
+      if (p) toast(`Page: ${p.name}`, { duration: 1200 })
       break
     }
     case 'nextPage':
@@ -35,7 +33,7 @@ function handleAction(a: HotkeyAction | TrayAction) {
       s.cyclePage(a.type === 'nextPage' ? 1 : -1)
       const next = useStore.getState()
       const p = next.pages.find((x) => x.id === next.activePageId)
-      if (p) toast(`${p.emoji} ${p.name}`, { description: 'Page keybinds active', duration: 1400 })
+      if (p) toast(`Page: ${p.name}`, { duration: 1200 })
       break
     }
     case 'preset':
@@ -85,47 +83,41 @@ function Welcome() {
   const setSettings = useStore((s) => s.setSettings)
   const setView = useStore((s) => s.setView)
   const steps = [
-    { icon: <Cable size={18} />, title: 'Install the virtual cable', text: 'Virtboard sends your mic + sounds into VB-Audio Virtual Cable (free). One-click install from Settings.' },
-    { icon: <MessageSquareText size={18} />, title: 'Pick it in Discord & games', text: 'Set your input device to “CABLE Output”. Everyone now hears your voice, effects and sounds.' },
-    { icon: <Keyboard size={18} />, title: 'Add sounds, bind keys', text: 'Drop in audio files, trim them, and give each page its own keybinds.' },
+    ['Install the virtual cable', 'Virtboard sends your voice and sounds through VB-Audio Virtual Cable (free). You can install it from Settings.'],
+    ['Choose it in Discord or your game', 'Set your microphone / input device to “CABLE Output”.'],
+    ['Add sounds and shortcuts', 'Drop audio files in, then give each one a key.'],
   ]
   return (
     <Dialog
       open={!onboarded}
       onOpenChange={() => setSettings({ onboarded: true })}
       title="Welcome to Virtboard"
-      description="Three steps and you’re live."
-      className="w-[min(620px,92vw)]"
-      icon={<img src="./logo.svg" className="h-10 w-10" alt="" />}
+      description="Three steps to get set up."
+      className="w-[min(480px,92vw)]"
     >
-      <div className="space-y-3 p-6">
-        {steps.map((s, i) => (
-          <div key={i} className="flex gap-4 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-accent/15 text-accent">{s.icon}</span>
+      <ol className="space-y-3 px-5 pb-5 pt-3">
+        {steps.map(([title, text], i) => (
+          <li key={i} className="flex gap-3">
+            <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-white/[0.07] text-[11px] text-zinc-300">{i + 1}</span>
             <div>
-              <div className="text-[14px] font-semibold text-white">
-                <span className="mr-2 font-mono text-accent">{i + 1}.</span>
-                {s.title}
-              </div>
-              <div className="mt-1 text-[12.5px] leading-relaxed text-zinc-400">{s.text}</div>
+              <div className="text-[13px] font-medium text-zinc-100">{title}</div>
+              <div className="text-[12.5px] text-zinc-500">{text}</div>
             </div>
-          </div>
+          </li>
         ))}
-        <div className="flex justify-end gap-2 pt-3">
+        <div className="flex justify-end gap-2 pt-2">
           <Button
-            variant="outline"
+            variant="ghost"
             onClick={() => {
               setSettings({ onboarded: true })
               setView('settings')
             }}
           >
-            Open audio settings
+            Open settings
           </Button>
-          <Button variant="primary" onClick={() => setSettings({ onboarded: true })}>
-            <Rocket size={14} /> Let’s go
-          </Button>
+          <Button variant="primary" onClick={() => setSettings({ onboarded: true })}>Get started</Button>
         </div>
-      </div>
+      </ol>
     </Dialog>
   )
 }
@@ -171,23 +163,14 @@ export function App() {
 
   return (
     <TooltipProvider>
-      <div className="app-bg noise relative flex h-full flex-col overflow-hidden">
+      <div className="flex h-full flex-col overflow-hidden bg-base">
         <TitleBar />
         <div className="flex min-h-0 flex-1">
           <Sidebar />
-          <main className="relative min-w-0 flex-1">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={view}
-                className="absolute inset-0"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.18 }}
-              >
-                {loaded && (view === 'board' ? <Soundboard /> : view === 'voice' ? <VoiceChanger /> : <Settings />)}
-              </motion.div>
-            </AnimatePresence>
+          <main className="relative min-w-0 flex-1 bg-base">
+            <div className="absolute inset-0">
+              {loaded && (view === 'board' ? <Soundboard /> : view === 'voice' ? <VoiceChanger /> : <Settings />)}
+            </div>
           </main>
         </div>
         <Mixer />
@@ -197,8 +180,8 @@ export function App() {
       <Toaster
         theme="dark"
         position="bottom-right"
-        offset={{ bottom: 100, right: 20 }}
-        toastOptions={{ className: '!bg-ink-800/95 !border-white/10 !backdrop-blur-xl !rounded-xl !text-zinc-100' }}
+        offset={{ bottom: 80, right: 16 }}
+        toastOptions={{ className: '!bg-raised !border-line !rounded-md !text-zinc-200' }}
       />
     </TooltipProvider>
   )

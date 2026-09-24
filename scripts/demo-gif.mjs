@@ -25,7 +25,7 @@ await page.getByText('Stream alerts').first().click()
 await grab(3)
 await page.getByText('New Follower').click()
 await grab(7)
-await page.getByRole('button', { name: 'Voice Changer', exact: true }).click()
+await page.getByRole('button', { name: 'Voice changer', exact: true }).click()
 await grab(3)
 for (const p of ['Robot', 'Demon', 'Chipmunk']) {
   await page.getByText(p, { exact: true }).first().click()

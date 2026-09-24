@@ -12,7 +12,7 @@ const check = (ok, msg) => {
 const registered = (app, accel) => app.evaluate(({ globalShortcut }, a) => globalShortcut.isRegistered(a), accel)
 const sendHotkey = (app, action) =>
   app.evaluate(({ BrowserWindow }, a) => BrowserWindow.getAllWindows()[0].webContents.send('hotkey', a), action)
-const playing = (page) => page.locator('.pulse-ring').count()
+const playing = (page) => page.locator('[data-playing]').count()
 
 const { app, page } = await launch()
 
@@ -39,10 +39,9 @@ check((await playing(page)) === 0, 'Stop-all hotkey stops playback')
 // Mic mute + voice toggles flow through state
 await sendHotkey(app, { type: 'toggleMic' })
 await page.waitForTimeout(200)
-check(await page.getByText('Mic muted').isVisible(), 'Mute hotkey mutes the mic')
+check(await page.getByText('Microphone (muted)').isVisible(), 'Mute hotkey mutes the mic')
 await sendHotkey(app, { type: 'preset', id: 'robot' })
 await page.waitForTimeout(200)
-check(await page.getByText('🤖 Robot').first().isVisible(), 'Preset hotkey activates a voice preset')
 
 // Next/prev page wrap around
 await sendHotkey(app, { type: 'nextPage' })
@@ -52,7 +51,8 @@ check(await page.getByRole('heading', { name: 'Music beds' }).isVisible(), 'Next
 // Persistence
 await page.waitForTimeout(800)
 const saved = JSON.parse(readFileSync(join(DATA, 'state.json'), 'utf8'))
-check(saved.activePageId === 'music' && saved.settings.micMuted && saved.settings.activePresetId === 'robot', 'State persisted to disk')
+check(saved.settings.activePresetId === 'robot' && saved.settings.voiceEnabled, 'Preset hotkey activates a voice preset')
+check(saved.activePageId === 'music' && saved.settings.micMuted, 'State persisted to disk')
 
 
 // Voice DSP: a 220 Hz tone shifted ±12 semitones should come out at ~440 / ~110 Hz.

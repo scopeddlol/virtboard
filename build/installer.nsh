@@ -5,13 +5,13 @@
 !include "LogicLib.nsh"
 
 !macro customHeader
-  BrandingText "Virtboard ${VERSION}  ·  Soundboard && Voice Changer"
+  BrandingText "Virtboard ${VERSION}"
 !macroend
 
 !macro customWelcomePage
   !define MUI_WELCOMEPAGE_TITLE "Welcome to Virtboard ${VERSION}"
   !define MUI_WELCOMEPAGE_TITLE_3LINES
-  !define MUI_WELCOMEPAGE_TEXT "Virtboard is a lightweight soundboard and real-time voice changer that plays straight into Discord, games and streaming apps through a virtual microphone.$\r$\n$\r$\n    •  Unlimited sounds with global hotkeys$\r$\n    •  Pages of sounds with their own keybinds$\r$\n    •  Custom voice-changer presets$\r$\n    •  Built-in sound trimmer$\r$\n$\r$\nClick Next to continue."
+  !define MUI_WELCOMEPAGE_TEXT "Virtboard is a soundboard and voice changer that plays into Discord, games and streaming apps through a virtual microphone.$\r$\n$\r$\nClick Next to continue."
   !insertmacro MUI_PAGE_WELCOME
 !macroend
 

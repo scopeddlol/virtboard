@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import WaveSurfer from 'wavesurfer.js'
 import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js'
-import { Download, Headphones, Play, RotateCcw, Scissors, Square, Trash2 } from 'lucide-react'
+import { Play, Square } from 'lucide-react'
 import { toast } from 'sonner'
 import type { PlayMode, Sound } from '@shared/types'
 import { engine } from '@/audio/engine'
@@ -9,7 +9,7 @@ import { encodeWav } from '@/audio/wav'
 import { api } from '@/lib/api'
 import { findConflict } from '@/lib/conflicts'
 import { persisted, useStore } from '@/state/store'
-import { ColorPicker, EmojiPicker } from './EmojiPicker'
+import { EmojiPicker } from './EmojiPicker'
 import { HotkeyInput } from './HotkeyInput'
 import { usePlaying } from './SoundPad'
 import { Button, Dialog, Label, Segmented, Slider, Switch } from './ui'
@@ -36,11 +36,11 @@ function Trimmer({ draft, setDraft }: { draft: Sound; setDraft: (p: Partial<Soun
       const regions = RegionsPlugin.create()
       ws = WaveSurfer.create({
         container: host.current,
-        height: 150,
+        height: 90,
         peaks: [buf.getChannelData(0)],
         duration: buf.duration,
-        waveColor: 'rgba(255,255,255,0.28)',
-        progressColor: 'rgba(255,255,255,0.28)',
+        waveColor: 'rgba(255,255,255,0.22)',
+        progressColor: 'rgba(255,255,255,0.22)',
         cursorWidth: 0,
         barWidth: 2,
         barGap: 1.5,
@@ -54,7 +54,7 @@ function Trimmer({ draft, setDraft }: { draft: Sound; setDraft: (p: Partial<Soun
         regionRef.current = regions.addRegion({
           start: d.trimStart,
           end: d.trimEnd ?? buf.duration,
-          color: `color-mix(in oklab, ${accent} 22%, transparent)`,
+          color: `color-mix(in oklab, ${accent} 18%, transparent)`,
           drag: true,
           resize: true,
           minLength: 0.05,
@@ -110,37 +110,43 @@ function Trimmer({ draft, setDraft }: { draft: Sound; setDraft: (p: Partial<Soun
   }
 
   return (
-    <div className="rounded-2xl border border-white/[0.07] bg-black/25 p-4">
-      <div className="relative">
+    <div>
+      <div className="relative rounded-md border border-line bg-base px-2 py-2">
         <div ref={host} className="relative" />
-        {!ready && <div className="h-[150px] animate-pulse rounded-xl bg-white/[0.04]" />}
-        <div ref={head} className="pointer-events-none absolute bottom-0 top-0 w-0.5 bg-white shadow-[0_0_10px_white]" style={{ opacity: 0 }} />
+        {!ready && <div className="h-[90px]" />}
+        <div ref={head} className="pointer-events-none absolute bottom-2 top-2 w-px bg-white" style={{ opacity: 0 }} />
       </div>
-      <div className="mt-3 flex flex-wrap items-center gap-3">
-        <Button variant={playing ? 'soft' : 'primary'} size="sm" onClick={() => (playing ? engine.stop(draft.id) : engine.play(draft, { localOnly: true }))}>
-          {playing ? <Square size={12} fill="currentColor" /> : <Headphones size={13} />}
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <Button size="sm" onClick={() => (playing ? engine.stop(draft.id) : engine.play(draft, { localOnly: true }))}>
+          {playing ? <Square size={10} fill="currentColor" /> : <Play size={11} />}
           {playing ? 'Stop' : 'Preview'}
         </Button>
-        <Button size="sm" onClick={() => engine.play(draft)}>
-          <Play size={12} /> Play to mic
-        </Button>
         {(['trimStart', 'trimEnd'] as const).map((k) => (
-          <div key={k} className="flex items-center gap-1 rounded-lg border border-white/[0.07] bg-white/[0.03] px-1 py-0.5">
-            <span className="px-1.5 text-[10.5px] uppercase tracking-wider text-zinc-500">{k === 'trimStart' ? 'Start' : 'End'}</span>
-            <button className="cursor-pointer rounded px-1.5 text-zinc-400 hover:bg-white/10 hover:text-white" onClick={() => nudge(k, -0.05)}>−</button>
-            <span className="w-16 text-center font-mono text-[11.5px] tabular-nums text-white">{t(k === 'trimStart' ? draft.trimStart : end)}</span>
-            <button className="cursor-pointer rounded px-1.5 text-zinc-400 hover:bg-white/10 hover:text-white" onClick={() => nudge(k, 0.05)}>+</button>
+          <div key={k} className="flex items-center rounded-md border border-line text-[12px]">
+            <span className="px-2 text-zinc-500">{k === 'trimStart' ? 'Start' : 'End'}</span>
+            <button className="cursor-pointer px-1.5 py-1 text-zinc-400 hover:text-zinc-100" onClick={() => nudge(k, -0.05)}>−</button>
+            <span className="w-14 text-center tabular-nums text-zinc-200">{t(k === 'trimStart' ? draft.trimStart : end)}</span>
+            <button className="cursor-pointer px-1.5 py-1 text-zinc-400 hover:text-zinc-100" onClick={() => nudge(k, 0.05)}>+</button>
           </div>
         ))}
-        <span className="font-mono text-[11.5px] text-zinc-400">
-          <Scissors size={12} className="mr-1 inline" />
-          {(end - draft.trimStart).toFixed(2)}s of {draft.duration.toFixed(2)}s
-        </span>
+        <span className="text-[12px] tabular-nums text-zinc-500">{(end - draft.trimStart).toFixed(2)}s</span>
         <Button variant="ghost" size="sm" className="ml-auto" onClick={() => setDraft({ trimStart: 0, trimEnd: null, fadeIn: 0, fadeOut: 0 })}>
-          <RotateCcw size={12} /> Reset
+          Reset
         </Button>
       </div>
     </div>
+  )
+}
+
+function Toggle({ title, hint, checked, onChange }: { title: string; hint: string; checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className="flex cursor-pointer items-center justify-between gap-3">
+      <span>
+        <span className="block text-[13px] text-zinc-200">{title}</span>
+        <span className="block text-[12px] text-zinc-500">{hint}</span>
+      </span>
+      <Switch checked={checked} onChange={onChange} />
+    </label>
   )
 }
 
@@ -164,7 +170,6 @@ export function SoundEditor() {
   const save = () => {
     updateSound(draft.id, draft)
     close()
-    toast.success(`Saved “${draft.name}”`)
   }
   const exportWav = async () => {
     try {
@@ -176,34 +181,29 @@ export function SoundEditor() {
   }
 
   return (
-    <Dialog
-      open
-      onOpenChange={(o) => !o && close()}
-      title="Edit sound"
-      description="Trim, fade, set a keybind and choose how it plays."
-      className="w-[min(860px,94vw)]"
-      icon={<span className="grid h-10 w-10 place-items-center rounded-xl bg-accent/20 text-accent"><Scissors size={18} /></span>}
-    >
-      <div className="space-y-5 p-6">
-        <div className="flex items-center gap-3">
-          <EmojiPicker value={draft.emoji} color={draft.color} onChange={(emoji) => setDraft({ emoji })} />
+    <Dialog open onOpenChange={(o) => !o && close()} title="Edit sound" className="w-[min(680px,94vw)]">
+      <div className="space-y-4 px-5 pb-5 pt-3">
+        <div className="flex gap-2">
+          <EmojiPicker value={draft.emoji} onChange={(emoji) => setDraft({ emoji })} />
           <input
             value={draft.name}
             onChange={(e) => setDraft({ name: e.target.value })}
-            className="h-12 min-w-0 flex-1 rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 font-display text-lg font-semibold text-white outline-none focus:border-accent/60"
+            className="h-8 min-w-0 flex-1 rounded-md border border-line bg-base px-2.5 text-[13px] text-zinc-100 outline-none focus:border-accent"
           />
-          <ColorPicker value={draft.color} onChange={(color) => setDraft({ color })} />
         </div>
 
-        <Trimmer draft={draft} setDraft={setDraft} />
+        <div>
+          <Label>Trim: drag the edges of the highlighted area</Label>
+          <Trimmer draft={draft} setDraft={setDraft} />
+        </div>
 
-        <div className="grid grid-cols-2 gap-x-8 gap-y-5">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-4">
           <div>
             <Label hint={`${Math.round(draft.volume * 100)}%`}>Volume</Label>
             <Slider value={draft.volume} onChange={(volume) => setDraft({ volume })} min={0} max={2} />
           </div>
           <div>
-            <Label hint={`${draft.rate.toFixed(2)}×`}>Speed & pitch</Label>
+            <Label hint={`${draft.rate.toFixed(2)}×`}>Speed</Label>
             <Slider value={draft.rate} onChange={(rate) => setDraft({ rate: +rate.toFixed(2) })} min={0.5} max={2} step={0.05} />
           </div>
           <div>
@@ -214,48 +214,35 @@ export function SoundEditor() {
             <Label hint={`${draft.fadeOut.toFixed(2)}s`}>Fade out</Label>
             <Slider value={draft.fadeOut} onChange={(fadeOut) => setDraft({ fadeOut })} min={0} max={3} step={0.05} />
           </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-x-6 gap-y-4 border-t border-line pt-4">
           <div>
-            <Label>Keybind on this page</Label>
-            <HotkeyInput value={draft.hotkey} onChange={(hotkey) => setDraft({ hotkey })} conflict={conflict} />
+            <Label>Shortcut on this page</Label>
+            <HotkeyInput value={draft.hotkey} onChange={(hotkey) => setDraft({ hotkey })} conflict={conflict} placeholder="None" />
           </div>
           <div>
-            <Label>When pressed while playing</Label>
+            <Label>Pressing it again while playing</Label>
             <Segmented<PlayMode>
               value={draft.mode}
               onChange={(mode) => setDraft({ mode })}
               options={[
-                { value: 'restart', label: 'Restart' },
-                { value: 'overlap', label: 'Overlap' },
-                { value: 'toggle', label: 'Stop' },
+                { value: 'restart', label: 'Restarts' },
+                { value: 'overlap', label: 'Overlaps' },
+                { value: 'toggle', label: 'Stops' },
               ]}
             />
           </div>
-          <label className="flex cursor-pointer items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3">
-            <span>
-              <span className="block text-[13px] font-medium text-white">Loop</span>
-              <span className="block text-[11.5px] text-zinc-400">Repeat the trimmed part until stopped</span>
-            </span>
-            <Switch checked={draft.loop} onChange={(loop) => setDraft({ loop })} />
-          </label>
-          <label className="flex cursor-pointer items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3">
-            <span>
-              <span className="block text-[13px] font-medium text-white">Play on my headphones</span>
-              <span className="block text-[11.5px] text-zinc-400">Hear it yourself as well as your listeners</span>
-            </span>
-            <Switch checked={draft.localPlayback} onChange={(localPlayback) => setDraft({ localPlayback })} />
-          </label>
+          <Toggle title="Loop" hint="Repeat until stopped" checked={draft.loop} onChange={(loop) => setDraft({ loop })} />
+          <Toggle title="Hear it yourself" hint="Also play on your headphones" checked={draft.localPlayback} onChange={(localPlayback) => setDraft({ localPlayback })} />
         </div>
 
-        <div className="flex items-center gap-2 border-t border-white/[0.06] pt-5">
-          <Button variant="danger" onClick={() => deleteSound(draft.id)}>
-            <Trash2 size={14} /> Delete
-          </Button>
-          <Button variant="outline" onClick={exportWav}>
-            <Download size={14} /> Export WAV
-          </Button>
+        <div className="flex items-center gap-2 border-t border-line pt-4">
+          <Button variant="danger" onClick={() => deleteSound(draft.id)}>Delete</Button>
+          <Button variant="ghost" onClick={exportWav}>Export WAV</Button>
           <div className="flex-1" />
           <Button variant="ghost" onClick={close}>Cancel</Button>
-          <Button variant="primary" onClick={save}>Save changes</Button>
+          <Button variant="primary" onClick={save}>Save</Button>
         </div>
       </div>
     </Dialog>

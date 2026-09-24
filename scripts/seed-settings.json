@@ -7,7 +7,7 @@
     "micVolume": 1, "soundsVolume": 0.8, "monitorVolume": 0.7, "micMuted": false,
     "monitorSounds": true, "monitorVoice": false, "voiceEnabled": false, "activePresetId": "deep",
     "noiseSuppression": true, "echoCancellation": false, "closeToTray": true, "startMinimized": false,
-    "launchOnStartup": false, "accent": "#8b5cf6", "onboarded": true,
+    "launchOnStartup": false, "accent": "#7c6cf0", "onboarded": true,
     "hotkeys": { "stopAll": "Ctrl+Alt+End", "toggleMic": "Ctrl+Alt+M", "toggleVoice": "Ctrl+Alt+V", "nextPage": "Ctrl+Alt+PageDown", "prevPage": "Ctrl+Alt+PageUp", "toggleWindow": "Ctrl+Alt+B" }
   },
   "presets": []

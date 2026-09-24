@@ -8,12 +8,12 @@ export const PALETTE = [
 ]
 
 export const ACCENTS = [
-  { name: 'Violet', value: '#8b5cf6' },
-  { name: 'Magenta', value: '#ec4899' },
-  { name: 'Ocean', value: '#06b6d4' },
-  { name: 'Lime', value: '#84cc16' },
-  { name: 'Sunset', value: '#f97316' },
-  { name: 'Rose', value: '#f43f5e' },
+  { name: 'Violet', value: '#7c6cf0' },
+  { name: 'Blue', value: '#4f8cf0' },
+  { name: 'Teal', value: '#2fa89a' },
+  { name: 'Green', value: '#4caf6a' },
+  { name: 'Amber', value: '#d99a2b' },
+  { name: 'Rose', value: '#e0607a' },
 ]
 
 export const EMOJIS = [
@@ -70,7 +70,7 @@ export const DEFAULT_SETTINGS: Settings = {
   closeToTray: true,
   startMinimized: false,
   launchOnStartup: false,
-  accent: '#8b5cf6',
+  accent: '#7c6cf0',
   hotkeys: {
     stopAll: 'Ctrl+Alt+End',
     toggleMic: 'Ctrl+Alt+M',

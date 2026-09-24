@@ -44,7 +44,7 @@ await page.keyboard.press('Escape')
 
 // Trimmer
 await page.getByText('Air Horn').click({ button: 'right' })
-await page.getByText('Edit, trim & keybind').click()
+await page.getByText('Edit…').click()
 await page.waitForTimeout(900)
 await page.getByRole('button', { name: 'Preview' }).click()
 await page.waitForTimeout(500)
@@ -64,14 +64,14 @@ await shot(page, '06-page-settings.png')
 await page.keyboard.press('Escape')
 
 // Voice changer
-await page.getByText('Voice Changer', { exact: true }).click()
+await page.getByRole('button', { name: 'Voice changer', exact: true }).click()
 await page.waitForTimeout(400)
 await page.getByText('Robot', { exact: true }).first().click()
 await page.waitForTimeout(1500)
 await shot(page, '07-voice-changer.png')
 
 // Custom preset editor
-await page.getByText('Customize a copy of').click()
+await page.getByText('Duplicate to edit').click()
 await page.waitForTimeout(600)
 await shot(page, '09-custom-preset.png')
 
@@ -79,22 +79,22 @@ await shot(page, '09-custom-preset.png')
 await page.getByText('Settings', { exact: true }).first().click()
 await page.waitForTimeout(700)
 await shot(page, '10-settings-audio.png')
-await page.getByText('Virtual mic output').locator('..').locator('button').click()
+await page.getByText('Virtual mic output').locator('../..').locator('button').click()
 await shot(page, '11-device-picker.png')
 await page.keyboard.press('Escape')
-await page.getByText('Global hotkeys').scrollIntoViewIfNeeded()
+await page.getByText('Shortcuts', { exact: true }).scrollIntoViewIfNeeded()
 await page.evaluate(() => document.querySelector('.overflow-y-auto')?.scrollBy(0, 120))
-await page.getByText('Toggle voice changer', { exact: true }).locator('xpath=../..').locator('button').first().click()
+await page.getByText('Voice changer on / off', { exact: true }).locator('xpath=../..').locator('button').first().click()
 await shot(page, '12-hotkeys.png')
 await page.keyboard.press('Escape')
-await page.getByText('Appearance').scrollIntoViewIfNeeded()
-await page.getByText('Ocean').click()
+await page.getByText('Accent color').scrollIntoViewIfNeeded()
+await page.getByTitle('Teal').click()
 await page.waitForTimeout(300)
 await shot(page, '13-appearance.png')
 
 // Accent themes on the soundboard
-for (const [name, file] of [['Magenta', '14-theme-magenta.png'], ['Lime', '15-theme-lime.png']]) {
-  await page.getByText(name, { exact: true }).click()
+for (const [name, file] of [['Blue', '14-theme-blue.png'], ['Rose', '15-theme-rose.png']]) {
+  await page.getByTitle(name).click()
   await page.getByRole('button', { name: 'Soundboard' }).click()
   await page.getByText('Memes').first().click()
   await page.waitForTimeout(300)
@@ -103,9 +103,9 @@ for (const [name, file] of [['Magenta', '14-theme-magenta.png'], ['Lime', '15-th
   await shot(page, file)
   await page.getByText('Settings', { exact: true }).first().click()
   await page.waitForTimeout(400)
-  await page.getByText('Appearance').scrollIntoViewIfNeeded()
+  await page.getByText('Accent color').scrollIntoViewIfNeeded()
 }
-await page.getByText('Violet', { exact: true }).click()
+await page.getByTitle('Violet').click()
 
 // Empty page
 await page.getByText('Gaming').first().click()

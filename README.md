@@ -1,233 +1,164 @@
 <p align="center">
-  <img src="docs/banner.png" alt="Virtboard — soundboard & voice changer for Windows" width="100%" />
+  <img src="docs/banner.png" alt="Virtboard" width="100%" />
 </p>
 
 <p align="center">
-  <b>A fast, beautiful soundboard & real-time voice changer for Windows.</b><br/>
-  Plays your sounds and your (changed) voice straight into Discord, games and OBS through a virtual microphone.
+  A simple soundboard and voice changer for Windows.<br/>
+  Your voice and sounds go to Discord, games and OBS through a virtual microphone.
 </p>
 
 <p align="center">
-  <a href="https://github.com/scopeddlol/virtboard/releases/latest"><img alt="Download" src="https://img.shields.io/github/v/release/scopeddlol/virtboard?label=download&style=for-the-badge&color=8b5cf6&logo=windows" /></a>
-  <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%2010%20%2F%2011-ec4899?style=for-the-badge" />
-  <img alt="License" src="https://img.shields.io/badge/license-MIT-06b6d4?style=for-the-badge" />
+  <a href="https://github.com/scopeddlol/virtboard/releases/latest"><b>Download for Windows</b></a>
 </p>
 
 <p align="center">
-  <img src="docs/demo.gif" alt="Virtboard in action" width="880" />
+  <img src="docs/demo.gif" alt="Virtboard in use" width="880" />
 </p>
 
----
+## Features
 
-## ✨ Features
+- **Unlimited sounds.** Drop in MP3, WAV, OGG, FLAC, M4A, AAC, WEBM or OPUS files.
+- **Global shortcuts.** Give any sound a key. Shortcuts work while Virtboard is minimized to the tray.
+- **Pages.** Each page has its own shortcuts, so `Num 1` can play one sound on *Memes* and another on *Stream*.
+- **Voice changer.** 13 built-in voices, plus your own presets: pitch, robot, bit-crush, distortion, tremolo, filters, EQ, echo, reverb and noise gate.
+- **Trimmer.** Trim, fade, change speed, loop, and export as WAV. Your original files are never changed.
+- **Volume controls.** Separate sliders for your microphone, sounds, and what you hear in your headphones.
+- **Optional playback.** Choose whether you hear the sounds yourself, globally or per sound.
+- **Tray.** Close to the tray, start with Windows, and control the mic, voice and pages from the tray menu.
 
-| | |
-|---|---|
-| 🎛️ **Unlimited sounds** | Drag & drop any MP3, WAV, OGG, FLAC, M4A, AAC, WEBM or OPUS file — as many as you like. |
-| ⌨️ **Global keybinds** | Every sound can have a system-wide hotkey that works even when Virtboard is minimized to the tray. Numpad keys, F-keys, media keys and combos are all supported. |
-| 📑 **Pages of sounds** | Each page has its **own keybind layout** — `Num 1` can be an air horn on *Memes* and a follower alert on *Stream*. Switch pages with a hotkey. |
-| 🎙️ **Voice changer** | 13 built-in voices (Deep, Chipmunk, Robot, Radio, Demon, Alien, 8-Bit, Ghost…) plus a full preset editor: pitch, robot, bit-crush, distortion, tremolo, filters, 3-band EQ, echo, reverb, noise gate. |
-| ✂️ **Sound trimmer** | Waveform editor with a draggable trim region, fine nudging, fades, volume, speed, loop and play-mode — then export the result as WAV. |
-| 🔌 **Virtual microphone** | Mic + sounds are mixed and sent to [VB-Audio Virtual Cable](https://vb-audio.com/Cable/). Virtboard detects it automatically and can install it for you. |
-| 🎧 **Optional monitoring** | Choose whether *you* hear the sounds (and/or your changed voice) on your headphones — globally or per sound. |
-| 🎚️ **Mixer** | Separate volume sliders & live meters for microphone, sounds and monitor, plus a one-click mute. |
-| 🪟 **Custom window chrome** | Frameless window with its own minimize / fullscreen / exit bar. |
-| 🧷 **Tray mode** | Close to tray, launch on startup, and control mic, voices and pages from the tray menu. |
-| 🎨 **Themes** | Six accent colours: Violet, Magenta, Ocean, Lime, Sunset, Rose. |
-| 📦 **Custom installer** | Branded NSIS installer that can set up the virtual cable for you. |
+## Install
 
-## 📥 Install
+1. Download `Virtboard-Setup-x.y.z.exe` from the [latest release](https://github.com/scopeddlol/virtboard/releases/latest) and run it.
+2. When asked, install **VB-Audio Virtual Cable** (free). It creates the virtual microphone. Restart if its installer asks you to.
+3. In Discord, open *Settings → Voice & Video* and set **Input Device** to **CABLE Output (VB-Audio Virtual Cable)**. Use the same device as the microphone in games or OBS.
+4. In Virtboard's **Settings**, check that *Virtual mic output* is **CABLE Input** and *Microphone* is your real mic.
 
-1. Download **`Virtboard-Setup-x.y.z.exe`** from the [latest release](https://github.com/scopeddlol/virtboard/releases/latest).
-2. Run it. When asked, let it install **VB-Audio Virtual Cable** (free). This is the driver that creates the virtual microphone. Reboot if the driver installer asks you to.
-3. In **Discord** → *Settings → Voice & Video* → **Input Device**, choose **`CABLE Output (VB-Audio Virtual Cable)`**. In OBS, games, Zoom etc. pick the same device as your microphone.
-4. Open Virtboard → **Settings** and make sure *Virtual mic output* is **`CABLE Input`** and *Microphone input* is your real mic.
+Windows only lets signed drivers create audio devices, which is why Virtboard uses VB-CABLE. It isn't bundled; Virtboard downloads it from vb-audio.com when you ask.
 
-That's it: everyone now hears your voice (with effects, if enabled) plus your sounds.
+## Screenshots
 
-> **Why a separate driver?** Windows only lets signed kernel drivers create new audio devices. VB-CABLE is the long-standing, free standard for this. Virtboard never bundles it; it downloads the official package from vb-audio.com on request.
+**Soundboard.** Click a sound to play it; its shortcut is shown on the button.
 
-## 📸 Screenshots
-
-### Soundboard
+<img src="docs/screenshots/01-soundboard.png" alt="Soundboard" />
 
 <table>
   <tr>
-    <td><img src="docs/screenshots/01-soundboard.png" alt="Soundboard" /></td>
-    <td><img src="docs/screenshots/05-pages.png" alt="Pages of sounds" /></td>
+    <td><img src="docs/screenshots/05-pages.png" alt="Pages" /><br/><sub>Pages, each with their own shortcuts</sub></td>
+    <td><img src="docs/screenshots/03-context-menu.png" alt="Right-click menu" /><br/><sub>Right-click to preview, edit, copy or move</sub></td>
   </tr>
   <tr>
-    <td align="center"><sub>Sound pads with live waveform progress & per-page keybinds</sub></td>
-    <td align="center"><sub>Every page has its own keybind layout</sub></td>
-  </tr>
-  <tr>
-    <td><img src="docs/screenshots/02-pad-hover.png" alt="Pad hover actions" /></td>
-    <td><img src="docs/screenshots/03-context-menu.png" alt="Context menu" /></td>
-  </tr>
-  <tr>
-    <td align="center"><sub>Hover a pad for quick trim & headphone preview</sub></td>
-    <td align="center"><sub>Right-click: preview locally, edit, copy / move to page, delete</sub></td>
-  </tr>
-  <tr>
-    <td><img src="docs/screenshots/06-page-settings.png" alt="Page settings" /></td>
-    <td><img src="docs/screenshots/16-empty-page.png" alt="Empty page" /></td>
-  </tr>
-  <tr>
-    <td align="center"><sub>Rename pages, pick an emoji, give each page a jump hotkey</sub></td>
-    <td align="center"><sub>Drag audio files anywhere onto the window to add them</sub></td>
+    <td><img src="docs/screenshots/06-page-settings.png" alt="Page settings" /><br/><sub>Page settings</sub></td>
+    <td><img src="docs/screenshots/16-empty-page.png" alt="Empty page" /><br/><sub>An empty page</sub></td>
   </tr>
 </table>
 
-### Sound trimmer
+**Editing a sound.** Drag the highlighted area to trim, then set a shortcut and how it plays.
 
-<p align="center"><img src="docs/screenshots/04-trimmer.png" alt="Sound trimmer" width="880" /></p>
-<p align="center"><sub>Drag the region to trim, nudge start/end precisely, add fades, change speed, set the keybind & play mode, export as WAV.</sub></p>
+<img src="docs/screenshots/04-trimmer.png" alt="Sound editor" />
 
-### Voice changer
+**Voice changer.** Pick a voice from the list. Built-in voices can be duplicated and edited.
 
 <table>
   <tr>
-    <td><img src="docs/screenshots/07-voice-changer.png" alt="Voice changer" /></td>
-    <td><img src="docs/screenshots/09-custom-preset.png" alt="Custom preset editor" /></td>
-  </tr>
-  <tr>
-    <td align="center"><sub>One-click voices with a live spectrum of your mic</sub></td>
-    <td align="center"><sub>Build your own presets; every change applies live</sub></td>
+    <td><img src="docs/screenshots/07-voice-changer.png" alt="Voice changer" /><br/><sub>Built-in voice</sub></td>
+    <td><img src="docs/screenshots/09-custom-preset.png" alt="Custom preset" /><br/><sub>Your own preset</sub></td>
   </tr>
 </table>
 
-### Settings
+**Settings**
 
 <table>
   <tr>
-    <td><img src="docs/screenshots/10-settings-audio.png" alt="Audio routing" /></td>
-    <td><img src="docs/screenshots/11-device-picker.png" alt="Device picker" /></td>
+    <td><img src="docs/screenshots/10-settings-audio.png" alt="Audio settings" /><br/><sub>Audio devices</sub></td>
+    <td><img src="docs/screenshots/11-device-picker.png" alt="Device picker" /><br/><sub>Choosing an output</sub></td>
   </tr>
   <tr>
-    <td align="center"><sub>Audio routing at a glance, with VB-CABLE detection</sub></td>
-    <td align="center"><sub>Pick input, virtual output and monitor devices</sub></td>
+    <td><img src="docs/screenshots/12-hotkeys.png" alt="Shortcuts" /><br/><sub>Global shortcuts</sub></td>
+    <td><img src="docs/screenshots/13-appearance.png" alt="App settings" /><br/><sub>App settings and accent color</sub></td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/12-hotkeys.png" alt="Global hotkeys" /></td>
-    <td><img src="docs/screenshots/13-appearance.png" alt="Behavior & appearance" /></td>
+    <td><img src="docs/screenshots/14-theme-blue.png" alt="Blue accent" /><br/><sub>Blue accent</sub></td>
+    <td><img src="docs/screenshots/15-theme-rose.png" alt="Rose accent" /><br/><sub>Rose accent</sub></td>
   </tr>
   <tr>
-    <td align="center"><sub>Rebind every global hotkey; conflicts are flagged</sub></td>
-    <td align="center"><sub>Tray behavior, launch on startup & accent colours</sub></td>
+    <td><img src="docs/screenshots/08-welcome.png" alt="Welcome" /><br/><sub>First run</sub></td>
+    <td><img src="docs/screenshots/02-pad-hover.png" alt="Hover" /><br/><sub>Hover a sound to edit it</sub></td>
   </tr>
 </table>
 
-### Themes & first run
-
-<table>
-  <tr>
-    <td><img src="docs/screenshots/14-theme-magenta.png" alt="Magenta theme" /></td>
-    <td><img src="docs/screenshots/15-theme-lime.png" alt="Lime theme" /></td>
-  </tr>
-  <tr>
-    <td align="center"><sub>Magenta accent</sub></td>
-    <td align="center"><sub>Lime accent</sub></td>
-  </tr>
-</table>
-<p align="center"><img src="docs/screenshots/08-welcome.png" alt="Welcome" width="640" /></p>
-<p align="center"><sub>First-run guide</sub></p>
-
-### Installer
+**Installer**
 
 <table>
   <tr>
     <td><img src="docs/screenshots/installer-1-welcome.png" alt="Installer welcome" /></td>
-    <td><img src="docs/screenshots/installer-2-license.png" alt="Installer license" /></td>
-    <td><img src="docs/screenshots/installer-3-mode.png" alt="Installer mode" /></td>
+    <td><img src="docs/screenshots/installer-4-location.png" alt="Install location" /></td>
+    <td><img src="docs/screenshots/installer-6-vbcable.png" alt="VB-CABLE prompt" /></td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/installer-4-location.png" alt="Installer location" /></td>
-    <td><img src="docs/screenshots/installer-6-vbcable.png" alt="Installer VB-CABLE prompt" /></td>
-    <td><img src="docs/screenshots/installer-7-finish.png" alt="Installer finish" /></td>
+    <td><img src="docs/screenshots/installer-2-license.png" alt="License" /></td>
+    <td><img src="docs/screenshots/installer-3-mode.png" alt="Install mode" /></td>
+    <td><img src="docs/screenshots/installer-7-finish.png" alt="Finish" /></td>
   </tr>
 </table>
-<p align="center"><sub>Branded NSIS installer: custom artwork, per-user or all-users install, optional VB-CABLE setup, Discord tip on finish.</sub></p>
 
-> Screenshots are captured automatically from the real app (`scripts/screenshots.mjs`, `scripts/installer-screens.sh`) on Linux, so the audio device names shown are simulated.
+<sub>Screenshots are captured automatically from the real app on Linux, so the device names are simulated.</sub>
 
-## ⌨️ Default hotkeys
+## Default shortcuts
 
-| Action | Default |
+| Action | Shortcut |
 |---|---|
 | Stop all sounds | `Ctrl` `Alt` `End` |
 | Mute / unmute microphone | `Ctrl` `Alt` `M` |
-| Toggle voice changer | `Ctrl` `Alt` `V` |
-| Next / previous sound page | `Ctrl` `Alt` `PgDn` / `PgUp` |
+| Voice changer on / off | `Ctrl` `Alt` `V` |
+| Next / previous page | `Ctrl` `Alt` `PgDn` / `PgUp` |
 | Show / hide Virtboard | `Ctrl` `Alt` `B` |
 
-Sound keybinds are set per sound (and per page) in the trimmer. Voice presets and pages can have their own hotkeys too.
-**Tip:** the numpad (`Num 0`–`Num 9`, `Num +`, …) is perfect for sounds. Unlike letter keys it won't block typing.
+All of these can be changed in Settings. The numpad works well for sound shortcuts because it doesn't interfere with typing.
 
-## 🧠 How it works
+## How it works
 
 ```mermaid
 flowchart LR
-  Mic[🎙️ Microphone] --> FX[Voice FX<br/>AudioWorklet + native nodes]
-  FX --> MicVol[Mic volume / mute]
-  Sounds[🔊 Sound pads] --> SVol[Sounds volume]
-  MicVol --> Mix((Mix))
-  SVol --> Mix
-  Mix -->|setSinkId| Cable[CABLE Input<br/>→ Discord hears CABLE Output]
-  SVol -. optional .-> Mon[🎧 Monitor<br/>your headphones]
-  MicVol -. optional .-> Mon
+  Mic[Microphone] --> FX[Voice changer]
+  FX --> Mix((Mix))
+  Sounds[Sounds] --> Mix
+  Mix --> Cable[CABLE Input]
+  Cable --> Apps[Discord / games hear CABLE Output]
+  Sounds -. optional .-> Phones[Your headphones]
 ```
 
-* **Electron main process**: frameless window, tray, global shortcuts (only the *active page's* sound keys are registered, so the same key can mean different things per page), atomic JSON storage, VB-CABLE installer.
-* **Renderer**: React UI + a Web Audio graph running in Chromium's real-time audio thread. The voice changer is a custom `AudioWorklet` (noise gate → pitch shifter → ring-mod → bit-crusher → tremolo) followed by native filters, EQ, wave-shaper, delay and convolution reverb. When the voice changer is off, the worklet is disconnected entirely (zero DSP cost).
-* **Two audio contexts** so the mix can go to the virtual cable while the monitor goes to your headphones.
-* Trims are **non-destructive**; your original files are never modified.
+- **Main process (Electron).** Window, tray, global shortcuts and storage. Only the current page's sound shortcuts are registered, which is how one key can do different things on different pages.
+- **Audio (Web Audio).** Runs on Chromium's real-time audio thread. The voice changer is a small `AudioWorklet` (noise gate, pitch shift, ring modulation, bit-crush, tremolo) followed by built-in filter, EQ, distortion, echo and reverb nodes. It's disconnected entirely when turned off.
+- **Data.** Stored in `%APPDATA%\Virtboard` (`state.json` and a `sounds` folder).
 
-Everything is stored in `%APPDATA%\Virtboard` (`state.json` + a `sounds` folder).
+Built with [Electron](https://www.electronjs.org/), [React](https://react.dev/), [Vite](https://vite.dev/), [Tailwind CSS](https://tailwindcss.com/), [Radix UI](https://www.radix-ui.com/), [wavesurfer.js](https://wavesurfer.xyz/), [Lucide](https://lucide.dev/), [Sonner](https://sonner.emilkowal.ski/), [Zustand](https://zustand.docs.pmnd.rs/), [Inter](https://rsms.me/inter/), [electron-builder](https://www.electron.build/) and [NSIS](https://nsis.sourceforge.io/).
 
-## 🧩 Built with these open-source projects
-
-* [Electron](https://www.electronjs.org/) · [React](https://react.dev/) · [Vite](https://vite.dev/) · [TypeScript](https://www.typescriptlang.org/)
-* [Tailwind CSS](https://tailwindcss.com/): styling
-* [Radix UI](https://www.radix-ui.com/): accessible sliders, switches, selects, dialogs, menus, tooltips
-* [Motion](https://motion.dev/): animations & layout transitions
-* [wavesurfer.js](https://wavesurfer.xyz/) + Regions plugin: the waveform trimmer
-* [Lucide](https://lucide.dev/): icons
-* [Sonner](https://sonner.emilkowal.ski/): toasts
-* [Zustand](https://zustand.docs.pmnd.rs/): state
-* [Inter](https://rsms.me/inter/) & [Space Grotesk](https://fonts.google.com/specimen/Space+Grotesk) via Fontsource
-* [electron-builder](https://www.electron.build/) + [NSIS](https://nsis.sourceforge.io/): the installer
-
-## 🛠️ Build from source
+## Build from source
 
 ```bash
 git clone https://github.com/scopeddlol/virtboard
 cd virtboard
 npm install
-npm run dev        # hot-reloading dev app
-npm run dist:win   # → release/Virtboard-Setup-x.y.z.exe
+npm run dev        # run with hot reload
+npm run dist:win   # build release/Virtboard-Setup-x.y.z.exe
 ```
 
-Other scripts:
-
-| Script | What it does |
+| Command | Purpose |
 |---|---|
-| `npm run typecheck` | TypeScript checks |
-| `npm run icons` | Regenerates the logo, `.ico`, tray icons and installer artwork from `scripts/logo.mjs` |
-| `node scripts/smoke-test.mjs` | End-to-end test of the real app (hotkeys, pages, playback, persistence, pitch-shift DSP) |
-| `node scripts/screenshots.mjs` | Re-captures the README screenshots |
+| `npm run typecheck` | Type-check the code |
+| `npm run icons` | Regenerate the logo, icons and installer images |
+| `node scripts/smoke-test.mjs` | End-to-end test of the built app |
+| `node scripts/screenshots.mjs` | Recapture the README screenshots |
 
-Releases are built on `windows-latest` by GitHub Actions whenever a `v*` tag is pushed (`.github/workflows/release.yml`).
+GitHub Actions builds the installer on Windows and publishes a release when a `v*` tag is pushed.
 
-## ❓ FAQ
+## Troubleshooting
 
-**My friends can't hear my sounds.** Check that Discord's *Input Device* is `CABLE Output` and Virtboard's *Virtual mic output* is `CABLE Input`. Turn off Discord's *Noise Suppression (Krisp)*, which can filter out sound effects.
+- **Others can't hear my sounds.** Discord's input device should be `CABLE Output`, and Virtboard's virtual mic output should be `CABLE Input`. Also try turning off Discord's noise suppression, which can filter out sound effects.
+- **I hear myself.** Turn off *Hear my voice* in Settings.
+- **A shortcut doesn't work.** Another app may already be using it (Virtboard shows a warning icon). Choose a different key.
+- **Can I use it without VB-CABLE?** Yes, but only you will hear the sounds.
 
-**I hear an echo of myself.** Turn off *Hear my voice* in Settings (or the ear toggle on the Voice Changer page).
+## License
 
-**A hotkey doesn't work.** Another app may already own that shortcut; Virtboard marks it with a ⚠️. Pick a different combo.
-
-**Does it work without VB-CABLE?** Yes, as a local soundboard / voice monitor. Other apps just won't receive the mix.
-
-## 📄 License
-
-[MIT](LICENSE) © scopeddlol. VB-Audio Virtual Cable is © VB-Audio Software and is downloaded from its official site. It is not distributed with Virtboard.
+[MIT](LICENSE). VB-Audio Virtual Cable is made by VB-Audio Software and is not included with Virtboard.
