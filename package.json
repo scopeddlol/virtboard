@@ -1,7 +1,7 @@
 {
   "name": "virtboard",
   "productName": "Virtboard",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A fast, beautiful soundboard & voice changer for Windows that routes through a virtual microphone.",
   "author": "scopeddlol",
   "license": "MIT",
