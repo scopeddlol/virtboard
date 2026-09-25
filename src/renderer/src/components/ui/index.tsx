@@ -89,9 +89,10 @@ export function Slider({
 
 // ------------------------------------------------------------------ Switch
 
-export function Switch({ checked, onChange, disabled }: { checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
+export function Switch({ checked, onChange, disabled, label }: { checked: boolean; onChange: (v: boolean) => void; disabled?: boolean; label?: string }) {
   return (
     <RSwitch.Root
+      aria-label={label}
       checked={checked}
       onCheckedChange={onChange}
       disabled={disabled}

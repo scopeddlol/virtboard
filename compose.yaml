@@ -1,0 +1,14 @@
+services:
+  website:
+    image: ghcr.io/scopeddlol/virtboard-website:0.2.0
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/data:ro
+    restart: unless-stopped
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true

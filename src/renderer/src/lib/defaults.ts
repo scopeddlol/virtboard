@@ -53,8 +53,11 @@ export const BUILTIN_PRESETS: VoicePreset[] = [
 export const DEFAULT_SETTINGS: Settings = {
   inputDeviceId: 'default',
   inputDeviceLabel: '',
-  virtualDeviceId: '',
-  virtualDeviceLabel: '',
+  outputs: [
+    { id: 'voice-chat', name: 'Voice Chat', deviceId: '', deviceLabel: '', micMuted: false, soundsMuted: false, micHotkey: '', soundsHotkey: '' },
+    { id: 'game-chat', name: 'Game Chat', deviceId: '', deviceLabel: '', micMuted: true, soundsMuted: false, micHotkey: '', soundsHotkey: '' },
+  ],
+  zoomFactor: 1,
   monitorDeviceId: 'default',
   monitorDeviceLabel: '',
   micVolume: 1,
@@ -83,7 +86,7 @@ export const DEFAULT_SETTINGS: Settings = {
 }
 
 export function defaultState(): AppState {
-  const page: Page = { id: uid(), name: 'Main', emoji: '🎛️', hotkey: '' }
+  const page: Page = { id: uid(), name: 'Main', emoji: '🎛️', hotkey: '', defaultMode: 'restart' }
   return {
     version: 1,
     settings: DEFAULT_SETTINGS,
@@ -99,7 +102,13 @@ export function migrate(s: AppState | null): AppState {
   if (!s) return defaultState()
   const base = defaultState()
   const settings = { ...DEFAULT_SETTINGS, ...s.settings, hotkeys: { ...DEFAULT_SETTINGS.hotkeys, ...s.settings?.hotkeys } }
-  const pages = s.pages?.length ? s.pages : base.pages
+  const legacy = s.settings as Settings & { virtualDeviceId?: string; virtualDeviceLabel?: string }
+  settings.outputs = s.settings?.outputs ?? DEFAULT_SETTINGS.outputs.map((o, i) => ({
+    ...o,
+    ...(i === 0 ? { deviceId: legacy?.virtualDeviceId ?? '', deviceLabel: legacy?.virtualDeviceLabel ?? '' } : {}),
+  }))
+  settings.zoomFactor = Number.isFinite(settings.zoomFactor) ? Math.max(0.5, Math.min(1.5, settings.zoomFactor)) : 1
+  const pages = s.pages?.length ? s.pages.map((p) => ({ ...p, defaultMode: p.defaultMode ?? 'restart' as const })) : base.pages
   const custom = (s.presets ?? []).filter((p) => !p.builtin).map((p) => ({ ...p, params: { ...NEUTRAL, ...p.params } }))
   // Built-ins always come from code, but keep any hotkeys the user assigned to them.
   const builtins = BUILTIN_PRESETS.map((b) => ({ ...b, hotkey: s.presets?.find((p) => p.id === b.id)?.hotkey ?? '' }))

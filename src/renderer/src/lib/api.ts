@@ -69,6 +69,8 @@ function createBrowserApi(): VirtboardApi {
       close() {},
       isMaximized: async () => false,
       onMaximizedChange: noop,
+      setZoom: (factor) => { document.documentElement.style.zoom = String(factor) },
+      onZoomChange: noop,
     },
     onHotkey: noop,
     onTrayAction: noop,
@@ -77,7 +79,7 @@ function createBrowserApi(): VirtboardApi {
       window.open('https://vb-audio.com/Cable/', '_blank')
       return 'opened-website'
     },
-    appVersion: async () => '0.1.0',
+    appVersion: async () => '0.2.0',
   }
   return api
 }

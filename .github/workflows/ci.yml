@@ -18,6 +18,7 @@ jobs:
       - run: npm ci
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+      - run: npm test
       - run: npm run build
       - name: End-to-end smoke test
         run: xvfb-run -a node scripts/smoke-test.mjs

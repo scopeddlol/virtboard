@@ -24,6 +24,10 @@ function bindings(state: AppState) {
   add(h.toggleVoice, { type: 'toggleVoice' })
   add(h.nextPage, { type: 'nextPage' })
   add(h.prevPage, { type: 'prevPage' })
+  for (const o of state.settings.outputs ?? []) {
+    add(o.micHotkey, { type: 'toggleOutputMic', id: o.id })
+    add(o.soundsHotkey, { type: 'toggleOutputSounds', id: o.id })
+  }
   for (const p of state.pages) add(p.hotkey, { type: 'page', id: p.id })
   for (const p of state.presets) add(p.hotkey, { type: 'preset', id: p.id })
   return map

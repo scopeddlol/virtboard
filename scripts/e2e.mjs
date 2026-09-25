@@ -13,7 +13,7 @@ const peaks = (s, n = 48) => {
   return p.map((x) => +(x / m).toFixed(3))
 }
 
-export function seed({ onboarded = true, accent = '#8b5cf6' } = {}) {
+export function seed({ onboarded = true, accent = '#8b5cf6', isolateHotkeys = false } = {}) {
   rmSync(DATA, { recursive: true, force: true })
   writeDemo(join(DATA, 'sounds'))
   const pages = [
@@ -47,6 +47,10 @@ export function seed({ onboarded = true, accent = '#8b5cf6' } = {}) {
   sounds[0].trimEnd = 1.45
   sounds[0].fadeOut = 0.2
   const state = JSON.parse(readFileSync(new URL('./seed-settings.json', import.meta.url)))
+  if (isolateHotkeys) {
+    state.settings.hotkeys.toggleMic = 'Ctrl+Alt+Shift+F10'
+    pages[1].hotkey = 'Ctrl+Alt+Shift+F11'
+  }
   state.settings.onboarded = onboarded
   state.settings.accent = accent
   state.pages = pages
@@ -62,6 +66,7 @@ const FAKE_DEVICES = () => {
     ['audioinput', 'headset-mic', 'Headset Microphone (Arctis 7)'],
     ['audiooutput', 'default', 'Default - Speakers (Realtek(R) Audio)'],
     ['audiooutput', 'cable', 'CABLE Input (VB-Audio Virtual Cable)'],
+    ['audiooutput', 'cable-b', 'CABLE-B Input (VB-Audio Cable B)'],
     ['audiooutput', 'arctis', 'Headphones (Arctis 7 Game)'],
     ['audiooutput', 'speakers', 'Speakers (Realtek(R) Audio)'],
   ]

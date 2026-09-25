@@ -4,7 +4,7 @@ on:
   push:
     tags: ['v*']
     # A branch push whose commit message contains "[release]" also publishes a
-    # release; the tag is created from package.json's version (v0.1.0 → v0.1).
+    # release; the tag is created from package.json's version (for example, v0.2.0).
     branches: ['**']
   workflow_dispatch:
 
@@ -50,11 +50,10 @@ jobs:
             echo "tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
           else
             v=$(node -p "require('./package.json').version")
-            echo "tag=v${v%.0}" >> "$GITHUB_OUTPUT"
+            echo "tag=v${v}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Publish GitHub release
-        if: startsWith(github.ref, 'refs/tags/') || contains(github.event.head_commit.message, '[release]')
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
