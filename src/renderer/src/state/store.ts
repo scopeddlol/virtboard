@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { AppState, ImportedFile, Page, Settings, Sound, VoiceParams, VoicePreset } from '@shared/types'
+import type { AppState, ImportedFile, Page, Settings, Sound, VoiceParams, VoicePreset, VirtualOutput } from '@shared/types'
 import { api } from '@/lib/api'
 import { defaultState, migrate, NEUTRAL, PALETTE, uid } from '@/lib/defaults'
 
@@ -21,6 +21,8 @@ interface Actions {
   setSearch(s: string): void
   setSettings(p: Partial<Settings>): void
   setHotkey(key: keyof Settings['hotkeys'], accel: string): void
+  updateOutput(id: string, patch: Partial<VirtualOutput>): void
+  toggleOutput(id: string, channel: 'micMuted' | 'soundsMuted'): void
   // pages
   addPage(): string
   updatePage(id: string, p: Partial<Page>): void
@@ -68,9 +70,11 @@ export const useStore = create<Store>()((set, get) => ({
   setSearch: (search) => set({ search }),
   setSettings: (p) => set((s) => ({ settings: { ...s.settings, ...p } })),
   setHotkey: (key, accel) => set((s) => ({ settings: { ...s.settings, hotkeys: { ...s.settings.hotkeys, [key]: accel } } })),
+  updateOutput: (id, patch) => set((s) => ({ settings: { ...s.settings, outputs: s.settings.outputs.map((o) => o.id === id ? { ...o, ...patch } : o) } })),
+  toggleOutput: (id, channel) => set((s) => ({ settings: { ...s.settings, outputs: s.settings.outputs.map((o) => o.id === id ? { ...o, [channel]: !o[channel] } : o) } })),
 
   addPage() {
-    const page: Page = { id: uid(), name: `Page ${get().pages.length + 1}`, emoji: '📁', hotkey: '' }
+    const page: Page = { id: uid(), name: `Page ${get().pages.length + 1}`, emoji: '📁', hotkey: '', defaultMode: 'restart' }
     set((s) => ({ pages: [...s.pages, page], activePageId: page.id, view: 'board' }))
     return page.id
   },
@@ -109,7 +113,7 @@ export const useStore = create<Store>()((set, get) => ({
       fadeOut: 0,
       rate: 1,
       loop: false,
-      mode: 'restart',
+      mode: s.pages.find((p) => p.id === s.activePageId)?.defaultMode ?? 'restart',
       localPlayback: true,
       duration: f.duration,
       peaks: f.peaks,

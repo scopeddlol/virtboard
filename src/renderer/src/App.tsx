@@ -46,6 +46,10 @@ function handleAction(a: HotkeyAction | TrayAction) {
     case 'toggleMic':
       s.toggleMic()
       break
+    case 'toggleOutputMic':
+    case 'toggleOutputSounds':
+      s.toggleOutput(a.id, a.type === 'toggleOutputMic' ? 'micMuted' : 'soundsMuted')
+      break
     case 'toggleVoice':
       s.toggleVoice()
       break
@@ -60,21 +64,20 @@ async function reconcileDevices() {
   const d = await listDevices()
   const { settings, setSettings } = useStore.getState()
   const patch: Partial<typeof settings> = {}
-  const fix = (list: MediaDeviceInfo[], id: string, label: string, idKey: 'inputDeviceId' | 'virtualDeviceId' | 'monitorDeviceId') => {
+  const fix = (list: MediaDeviceInfo[], id: string, label: string, idKey: 'inputDeviceId' | 'monitorDeviceId') => {
     if (!id || list.some((x) => x.deviceId === id)) return
     const byLabel = list.find((x) => x.label === label)
     if (byLabel) patch[idKey] = byLabel.deviceId
   }
   fix(d.inputs, settings.inputDeviceId, settings.inputDeviceLabel, 'inputDeviceId')
-  fix(d.outputs, settings.virtualDeviceId, settings.virtualDeviceLabel, 'virtualDeviceId')
   fix(d.outputs, settings.monitorDeviceId, settings.monitorDeviceLabel, 'monitorDeviceId')
-  if (!settings.virtualDeviceId) {
-    const cable = d.outputs.find((x) => isVirtualOutput(x.label))
-    if (cable) {
-      patch.virtualDeviceId = cable.deviceId
-      patch.virtualDeviceLabel = cable.label
-    }
-  }
+  const outputs = settings.outputs.map((o, i) => {
+    if (o.deviceId && d.outputs.some((x) => x.deviceId === o.deviceId)) return o
+    const device = o.deviceId ? d.outputs.find((x) => x.label === o.deviceLabel)
+      : !settings.onboarded && i === 0 ? d.outputs.find((x) => isVirtualOutput(x.label)) : undefined
+    return device ? { ...o, deviceId: device.deviceId, deviceLabel: device.label } : o
+  })
+  if (outputs.some((o, i) => o !== settings.outputs[i])) patch.outputs = outputs
   if (Object.keys(patch).length) setSettings(patch)
 }
 
@@ -138,9 +141,13 @@ export function App() {
     })
     const offHotkey = api.onHotkey(handleAction)
     const offTray = api.onTrayAction(handleAction)
+    const offZoom = api.window.onZoomChange((zoomFactor) => useStore.getState().setSettings({ zoomFactor }))
+    navigator.mediaDevices.addEventListener('devicechange', reconcileDevices)
     return () => {
       offHotkey()
       offTray()
+      offZoom()
+      navigator.mediaDevices.removeEventListener('devicechange', reconcileDevices)
     }
   }, [])
 
@@ -148,11 +155,13 @@ export function App() {
     if (!loaded) return
     const apply = () => {
       const s = useStore.getState()
+      api.window.setZoom(s.settings.zoomFactor)
       engine.applySettings(s.settings).then(() => engine.setVoiceParams(activePreset(s).params))
     }
     apply()
     return useStore.subscribe((s, prev) => {
       if (s.settings !== prev.settings) engine.applySettings(s.settings)
+      if (s.settings.zoomFactor !== prev.settings.zoomFactor) api.window.setZoom(s.settings.zoomFactor)
       if (s.presets !== prev.presets || s.settings.activePresetId !== prev.settings.activePresetId) engine.setVoiceParams(activePreset(s).params)
     })
   }, [loaded])

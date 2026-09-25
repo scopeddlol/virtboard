@@ -1,14 +1,15 @@
 import type { Settings, Sound, VoiceParams } from '@shared/types'
 import { api } from '@/lib/api'
+import { OutputRouter } from './outputs'
 import { NEUTRAL } from '@/lib/defaults'
 
 /**
  * Virtboard's audio graph (everything runs natively in Chromium's audio thread):
  *
  *   mic ─┬─► [voice worklet → filters → EQ → drive → echo/reverb] ─┐
- *        └─► bypass ────────────────────────────────────────────────┴► micVol ► mute ─┬─► MIX ─► virtual cable (setSinkId)
+ *        └─► bypass ────────────────────────────────────────────────┴► micVol ► mute ─┬─► per-output mic gates ─► independent virtual cable mixes
  *                                                                                     └─► monitor (optional)
- *   sounds ─► per-sound gain ─► soundsVol ─► MIX
+ *   sounds ─► per-sound gain ─► soundsVol ─► per-output sound gates ─► independent virtual cable mixes
  *                          └──► local ─► monitor bus ─► 2nd AudioContext on your headphones
  */
 
@@ -83,7 +84,8 @@ class Engine {
   // sounds
   private soundsVol!: GainNode
   private localSounds!: GainNode
-  private mix!: GainNode
+  private outputRouter!: OutputRouter
+  private applying: Promise<void> = Promise.resolve()
   private monitorBus!: GainNode
   private monitorVol!: GainNode
   micAnalyser!: AnalyserNode
@@ -115,7 +117,6 @@ class Engine {
       n.gain.value = v
       return n
     }
-    this.mix = g()
     this.monitorBus = g()
     this.fxInput = g()
     this.bypass = g()
@@ -167,14 +168,13 @@ class Engine {
     this.bypass.connect(this.voiceBus)
 
     this.voiceBus.connect(this.micVol).connect(this.mute)
-    this.mute.connect(this.mix)
     this.mute.connect(this.micAnalyser)
     this.mute.connect(this.monitorVoice).connect(this.monitorBus)
 
-    this.soundsVol.connect(this.mix)
     this.soundsVol.connect(this.soundsAnalyser)
     this.localSounds.connect(this.monitorBus)
-    this.mix.connect(ctx.destination)
+    this.outputRouter = new OutputRouter(ctx, this.mute, this.soundsVol)
+    await this.setSink(ctx, '')
 
     // Monitor path lives in a 2nd context so it can target a different output device.
     const bridge = ctx.createMediaStreamDestination()
@@ -184,6 +184,7 @@ class Engine {
 
     navigator.mediaDevices.addEventListener('devicechange', () => {
       if (this.settings) {
+        this.outputRouter.muteAll()
         this.micKey = ''
         this.applySettings(this.settings)
       }
@@ -191,6 +192,7 @@ class Engine {
     const resume = () => {
       if (ctx.state !== 'running') ctx.resume()
       if (this.monitorCtx.state !== 'running') this.monitorCtx.resume()
+      this.outputRouter.resume()
     }
     document.addEventListener('pointerdown', resume)
     document.addEventListener('keydown', resume)
@@ -199,7 +201,7 @@ class Engine {
 
   subscribe(fn: Listener) {
     this.listeners.add(fn)
-    return () => this.listeners.delete(fn)
+    return () => { this.listeners.delete(fn) }
   }
   private emit() {
     for (const fn of this.listeners) fn()
@@ -296,7 +298,15 @@ class Engine {
 
   // ---------------------------------------------------------- settings ---
 
-  async applySettings(s: Settings) {
+  get outputErrors() { return this.outputRouter?.errors ?? {} }
+
+  applySettings(s: Settings) {
+    const next = this.applying.then(() => this.applySettingsNow(s))
+    this.applying = next.catch((e) => console.warn('[virtboard] settings failed', e))
+    return this.applying
+  }
+
+  private async applySettingsNow(s: Settings) {
     await this.init()
     const prev = this.settings
     this.settings = s
@@ -307,7 +317,8 @@ class Engine {
     this.localSounds.gain.setTargetAtTime(s.monitorSounds ? 1 : 0, t, 0.02)
     this.monitorVoice.gain.setTargetAtTime(s.monitorVoice ? 1 : 0, t, 0.02)
     this.monitorVol.gain.setTargetAtTime(s.monitorVolume, this.monitorCtx.currentTime, 0.02)
-    if (!prev || prev.virtualDeviceId !== s.virtualDeviceId) await this.setSink(this.ctx, s.virtualDeviceId)
+    await this.outputRouter.apply(s.outputs)
+    this.emit()
     if (!prev || prev.monitorDeviceId !== s.monitorDeviceId) await this.setSink(this.monitorCtx, s.monitorDeviceId || 'default')
     if (!prev || prev.voiceEnabled !== s.voiceEnabled) this.routeVoice()
     await this.openMic(s)

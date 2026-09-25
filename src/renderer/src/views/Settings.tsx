@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import type { Hotkeys } from '@shared/types'
 import { api } from '@/lib/api'
-import { ACCENTS } from '@/lib/defaults'
+import { engine } from '@/audio/engine'
+import { ACCENTS, uid } from '@/lib/defaults'
 import { deviceLabel, isVirtualOutput, useDevices } from '@/lib/devices'
 import { findConflict } from '@/lib/conflicts'
 import { persisted, useStore } from '@/state/store'
@@ -43,9 +44,12 @@ const HOTKEY_ROWS: { key: keyof Hotkeys; title: string }[] = [
 export function Settings() {
   const s = useStore((st) => st.settings)
   const setSettings = useStore((st) => st.setSettings)
+  const updateOutput = useStore((st) => st.updateOutput)
+  const [, refreshErrors] = useState(0)
+  useEffect(() => engine.subscribe(() => refreshErrors((n) => n + 1)), [])
   const setHotkey = useStore((st) => st.setHotkey)
   const devices = useDevices()
-  const [version, setVersion] = useState('0.1.0')
+  const [version, setVersion] = useState('0.2.0')
   const [installing, setInstalling] = useState(false)
   useEffect(() => {
     api.appVersion().then(setVersion)
@@ -80,23 +84,11 @@ export function Settings() {
       <div className="mx-auto max-w-[680px] px-6 py-6">
         <h1 className="mb-6 text-[17px] font-semibold text-zinc-100">Settings</h1>
 
-        <Section title="Audio" description="Your voice and sounds are mixed together and sent to a virtual microphone that Discord, games and OBS can use.">
+        <Section title="Audio" description="Choose your microphone and headphones, then set up separate mixes for your chat apps.">
           {field(
             'Microphone',
             'Your real mic',
             <Select value={s.inputDeviceId} options={inputs} onChange={(id) => setSettings({ inputDeviceId: id, inputDeviceLabel: pick(devices.inputs, id) })} />,
-          )}
-          {field(
-            'Virtual mic output',
-            'Usually “CABLE Input”',
-            <Select
-              value={s.virtualDeviceId}
-              options={[{ value: 'none', label: 'None' }, ...outputs]}
-              placeholder="Choose an output…"
-              onChange={(id) =>
-                setSettings(id === 'none' ? { virtualDeviceId: '', virtualDeviceLabel: '' } : { virtualDeviceId: id, virtualDeviceLabel: pick(devices.outputs, id) })
-              }
-            />,
           )}
           {field(
             'Your headphones',
@@ -109,13 +101,8 @@ export function Settings() {
               <div className="flex items-center gap-3">
                 <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
                 <span className="flex-1">
-                  VB-CABLE is installed. In Discord or your game, set the microphone to <span className="text-zinc-200">CABLE Output</span>.
+                  VB-CABLE is installed. Its matching microphone is <span className="text-zinc-200">CABLE Output</span>.
                 </span>
-                {s.virtualDeviceId !== cable.deviceId && (
-                  <Button size="sm" variant="primary" onClick={() => setSettings({ virtualDeviceId: cable.deviceId, virtualDeviceLabel: cable.label })}>
-                    Use it
-                  </Button>
-                )}
               </div>
             ) : (
               <div className="flex items-center gap-3">
@@ -129,6 +116,36 @@ export function Settings() {
               </div>
             )}
           </div>
+        </Section>
+
+        <Section title="Virtual outputs" description="Choose a different installed virtual cable for each output. In Discord and your game, select the matching cable recording device as the microphone. Adding a route here does not install a Windows audio device.">
+          <p className="text-[12px] text-zinc-400">For sounds in game while talking in Discord: mute the Game Chat microphone and mute the Voice Chat soundboard. The global microphone mute still silences your mic on every output.</p>
+          {s.outputs.map((o) => (
+            <div key={o.id} data-output-id={o.id} className="space-y-3 rounded-md border border-line bg-panel p-4">
+              <div className="flex items-center gap-3">
+                <input aria-label={`${o.name} name`} className="min-w-0 flex-1 rounded border border-line bg-base px-2 py-1 text-[13px] text-zinc-200" value={o.name} maxLength={40} onChange={(e) => updateOutput(o.id, { name: e.target.value })} />
+                <Button size="sm" variant="ghost" onClick={() => setSettings({ outputs: s.outputs.filter((x) => x.id !== o.id) })}>Remove</Button>
+              </div>
+              <Select value={o.deviceId || 'none'} options={[
+                { value: 'none', label: 'None (disabled)' },
+                ...(o.deviceId && !devices.outputs.some((d) => d.deviceId === o.deviceId) ? [{ value: o.deviceId, label: `${o.deviceLabel || 'Saved device'} (unavailable)` }] : []),
+                ...outputs.filter((d) => d.value !== 'default' && !s.outputs.some((x) => x.id !== o.id && x.deviceId === d.value)),
+              ]} onChange={(id) => updateOutput(o.id, { deviceId: id === 'none' ? '' : id, deviceLabel: id === 'none' ? '' : pick(devices.outputs, id) })} />
+              {engine.outputErrors[o.id] && <p role="alert" className="text-[12px] text-amber-400">{engine.outputErrors[o.id]}</p>}
+              <Row title="Mute microphone" description={s.micMuted ? 'Global microphone mute is also on' : undefined}>
+                <Switch label={`Mute ${o.name} microphone`} checked={o.micMuted} onChange={(micMuted) => updateOutput(o.id, { micMuted })} />
+              </Row>
+              <Row title="Mute soundboard">
+                <Switch label={`Mute ${o.name} soundboard`} checked={o.soundsMuted} onChange={(soundsMuted) => updateOutput(o.id, { soundsMuted })} />
+              </Row>
+              {(['micHotkey', 'soundsHotkey'] as const).map((key) => (
+                <Row key={key} title={key === 'micHotkey' ? 'Microphone mute keybind' : 'Soundboard mute keybind'}>
+                  <HotkeyInput className="w-[200px]" value={o[key]} onChange={(v) => updateOutput(o.id, { [key]: v })} conflict={findConflict(persisted(useStore.getState()), o[key], { output: `${o.id}:${key}` })} placeholder="None" />
+                </Row>
+              ))}
+            </div>
+          ))}
+          <Button variant="outline" onClick={() => setSettings({ outputs: [...s.outputs, { id: uid(), name: `Output ${s.outputs.length + 1}`, deviceId: '', deviceLabel: '', micMuted: true, soundsMuted: false, micHotkey: '', soundsHotkey: '' }] })}>Add virtual output</Button>
         </Section>
 
         <Section title="Microphone">
@@ -189,9 +206,7 @@ export function Settings() {
         </Section>
 
         <Section title="About">
-          <Row title={`Virtboard ${version}`} description="Open source · MIT license">
-            <Button variant="outline" onClick={() => api.openExternal('https://github.com/scopeddlol/virtboard')}>View on GitHub</Button>
-          </Row>
+          <p className="text-[13px] text-zinc-200">Virtboard {version} <span className="text-zinc-500">· Open source · MIT license</span></p>
         </Section>
       </div>
     </div>

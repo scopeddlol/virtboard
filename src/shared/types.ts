@@ -30,6 +30,7 @@ export interface Sound {
 }
 
 export interface Page {
+  defaultMode: PlayMode
   id: string
   name: string
   emoji: string
@@ -79,11 +80,22 @@ export interface Hotkeys {
   toggleWindow: string
 }
 
+export interface VirtualOutput {
+  id: string
+  name: string
+  deviceId: string
+  deviceLabel: string
+  micMuted: boolean
+  soundsMuted: boolean
+  micHotkey: string
+  soundsHotkey: string
+}
+
 export interface Settings {
   inputDeviceId: string
   inputDeviceLabel: string
-  virtualDeviceId: string
-  virtualDeviceLabel: string
+  outputs: VirtualOutput[]
+  zoomFactor: number
   monitorDeviceId: string
   monitorDeviceLabel: string
   micVolume: number // 0..2
@@ -114,6 +126,7 @@ export interface AppState {
 }
 
 export type HotkeyAction =
+  | { type: 'toggleOutputMic' | 'toggleOutputSounds'; id: string }
   | { type: 'sound'; id: string }
   | { type: 'page'; id: string }
   | { type: 'preset'; id: string }
@@ -153,6 +166,8 @@ export interface VirtboardApi {
     close(): void
     isMaximized(): Promise<boolean>
     onMaximizedChange(cb: (maximized: boolean) => void): () => void
+    setZoom(factor: number): void
+    onZoomChange(cb: (factor: number) => void): () => void
   }
   onHotkey(cb: (action: HotkeyAction) => void): () => void
   onTrayAction(cb: (action: TrayAction) => void): () => void

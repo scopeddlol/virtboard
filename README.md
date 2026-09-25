@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/scopeddlol/virtboard/releases/latest"><b>Download for Windows</b></a>
+  <b>Download for Windows from the Virtboard website.</b>
 </p>
 
 <p align="center">
@@ -18,8 +18,10 @@
 ## Features
 
 - **Unlimited sounds.** Drop in MP3, WAV, OGG, FLAC, M4A, AAC, WEBM or OPUS files.
+- **Independent outputs.** Separate Voice Chat and Game Chat mixes with per-output microphone and soundboard mute keybinds. Add more named routes as needed.
+- **Zoom.** Zoom in, out, or reset from the title bar or with Ctrl++, Ctrl+- and Ctrl+0.
 - **Global shortcuts.** Give any sound a key. Shortcuts work while Virtboard is minimized to the tray.
-- **Pages.** Each page has its own shortcuts, so `Num 1` can play one sound on *Memes* and another on *Stream*.
+- **Pages.** Each page has its own default repeat behavior (Restarts, Overlaps or Stops) for newly added sounds and its own shortcuts, so `Num 1` can play one sound on *Memes* and another on *Stream*.
 - **Voice changer.** 13 built-in voices, plus your own presets: pitch, robot, bit-crush, distortion, tremolo, filters, EQ, echo, reverb and noise gate.
 - **Trimmer.** Trim, fade, change speed, loop, and export as WAV. Your original files are never changed.
 - **Volume controls.** Separate sliders for your microphone, sounds, and what you hear in your headphones.
@@ -28,12 +30,18 @@
 
 ## Install
 
-1. Download `Virtboard-Setup-x.y.z.exe` from the [latest release](https://github.com/scopeddlol/virtboard/releases/latest) and run it.
+1. Download the Windows installer from the Virtboard website and run it.
 2. When asked, install **VB-Audio Virtual Cable** (free). It creates the virtual microphone. Restart if its installer asks you to.
-3. In Discord, open *Settings → Voice & Video* and set **Input Device** to **CABLE Output (VB-Audio Virtual Cable)**. Use the same device as the microphone in games or OBS.
-4. In Virtboard's **Settings**, check that *Virtual mic output* is **CABLE Input** and *Microphone* is your real mic.
+3. In Discord, open *Settings → Voice & Video* and set **Input Device** to **CABLE Output (VB-Audio Virtual Cable)**. For an independent game mix, select a second cable’s recording device in the game.
+4. In Virtboard's **Settings**, check that *Voice Chat* uses **CABLE Input** and *Microphone* is your real mic.
 
 Windows only lets signed drivers create audio devices, which is why Virtboard uses VB-CABLE. It isn't bundled; Virtboard downloads it from vb-audio.com when you ask.
+
+Each independent output requires a different installed virtual cable. Keep the Game Chat microphone muted to talk in Discord while playing sounds in game. Mute Voice Chat’s soundboard if only the game should hear clips. The global microphone mute silences the mic everywhere.
+
+## Website hosting
+
+The Docker landing page serves installers from `./data` via `compose.yaml`. See [website operator instructions](website/README.md) for GHCR images, volume setup and updates. Visitors download directly from the website.
 
 ## Screenshots
 

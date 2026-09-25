@@ -1,3 +1,4 @@
+import type { PlayMode } from '@shared/types'
 import { useEffect, useMemo, useState } from 'react'
 import { Plus, Search, Settings, Upload } from 'lucide-react'
 import { useStore } from '@/state/store'
@@ -8,7 +9,7 @@ import { persisted } from '@/state/store'
 import { SoundPad } from '@/components/SoundPad'
 import { HotkeyInput } from '@/components/HotkeyInput'
 import { EmojiPicker } from '@/components/EmojiPicker'
-import { Button, Dialog, Label } from '@/components/ui'
+import { Button, Dialog, Label, Segmented } from '@/components/ui'
 
 function PageSettings({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   const page = useStore((s) => s.pages.find((p) => p.id === s.activePageId))
@@ -34,6 +35,15 @@ function PageSettings({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
         <div>
           <Label>Shortcut to switch to this page</Label>
           <HotkeyInput value={page.hotkey} onChange={(hotkey) => updatePage(page.id, { hotkey })} conflict={conflict} placeholder="None" />
+        </div>
+        <div>
+          <Label>Pressing it again while playing</Label>
+          <Segmented<PlayMode> value={page.defaultMode} onChange={(defaultMode) => updatePage(page.id, { defaultMode })} options={[
+            { value: 'restart', label: 'Restarts' },
+            { value: 'overlap', label: 'Overlaps' },
+            { value: 'toggle', label: 'Stops' },
+          ]} />
+          <p className="mt-2 text-[12px] text-zinc-500">Default for new sounds on this page. Existing sounds keep their own setting.</p>
         </div>
         <div className="flex justify-between pt-2">
           <Button

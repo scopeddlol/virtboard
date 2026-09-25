@@ -80,6 +80,20 @@ async function init() {
       spellcheck: false,
     },
   })
+  win.webContents.on('before-input-event', (event, input) => {
+    if (hotkeysPaused || input.type !== 'keyDown' || !(input.control || input.meta) || input.alt) return
+    const key = input.key
+    if (['+', '=', '-', '_', '0'].includes(key) || ['NumpadAdd', 'NumpadSubtract', 'Numpad0'].includes(input.code)) {
+      event.preventDefault()
+      const reset = key === '0' || input.code === 'Numpad0'
+      const out = key === '-' || key === '_' || input.code === 'NumpadSubtract'
+      setZoom(reset ? 1 : win!.webContents.getZoomFactor() + (out ? -0.1 : 0.1))
+    }
+  })
+  win.webContents.on('zoom-changed', (event, direction) => {
+    event.preventDefault()
+    setZoom(win!.webContents.getZoomFactor() + (direction === 'in' ? 0.1 : -0.1))
+  })
   win.once('ready-to-show', () => {
     if (!hidden) win?.show()
   })
@@ -177,7 +191,19 @@ ipcMain.handle('sound:export-wav', async (_e, name: string, bytes: Uint8Array) =
   return true
 })
 
-ipcMain.handle('hotkeys:pause', (_e, paused: boolean) => setPaused(paused))
+let hotkeysPaused = false
+ipcMain.handle('hotkeys:pause', (_e, paused: boolean) => {
+  hotkeysPaused = paused
+  setPaused(paused)
+})
+
+function setZoom(factor: number) {
+  if (!win || !Number.isFinite(factor)) return
+  const next = Math.max(0.5, Math.min(1.5, Math.round(factor * 100) / 100))
+  win.webContents.setZoomFactor(next)
+  win.webContents.send('zoom-changed', next)
+}
+ipcMain.on('win:zoom', (_e, factor: number) => setZoom(factor))
 
 ipcMain.on('win:minimize', () => win?.minimize())
 ipcMain.on('win:toggle-maximize', () => (win?.isMaximized() ? win.unmaximize() : win?.maximize()))

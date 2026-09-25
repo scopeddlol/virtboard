@@ -17,9 +17,8 @@ export function Sidebar() {
   const activePageId = useStore((s) => s.activePageId)
   const setActivePage = useStore((s) => s.setActivePage)
   const addPage = useStore((s) => s.addPage)
-  const virtualLabel = useStore((s) => s.settings.virtualDeviceLabel)
-  const virtualId = useStore((s) => s.settings.virtualDeviceId)
-  const cableOk = !!virtualId && isVirtualOutput(virtualLabel)
+  const outputs = useStore((s) => s.settings.outputs)
+  const cableOk = outputs.some((o) => !!o.deviceId && isVirtualOutput(o.deviceLabel))
 
   const item = (active: boolean) =>
     cn(

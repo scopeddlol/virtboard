@@ -1,0 +1,6 @@
+**
+!website/
+!website/server.mjs
+!website/public/
+!website/public/**
+!Dockerfile

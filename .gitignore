@@ -7,3 +7,6 @@ release/
 .screenshot-data/
 release-screens/
 build/.screens.nsh
+
+data/
+.edit-temp.mjs

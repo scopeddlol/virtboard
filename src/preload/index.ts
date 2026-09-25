@@ -27,6 +27,8 @@ const api: VirtboardApi = {
     close: () => ipcRenderer.send('win:close'),
     isMaximized: () => ipcRenderer.invoke('win:is-maximized'),
     onMaximizedChange: (cb) => listen<boolean>('maximized', cb),
+    setZoom: (factor) => ipcRenderer.send('win:zoom', factor),
+    onZoomChange: (cb) => listen<number>('zoom-changed', cb),
   },
   onHotkey: (cb) => listen<HotkeyAction>('hotkey', cb),
   onTrayAction: (cb) => listen<TrayAction>('tray-action', cb),

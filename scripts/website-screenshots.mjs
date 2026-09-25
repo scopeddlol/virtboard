@@ -1,0 +1,25 @@
+import { launch } from './e2e.mjs'
+import { mkdirSync } from 'node:fs'
+mkdirSync('website/public/screenshots', { recursive: true })
+const { app, page } = await launch({ isolateHotkeys: true })
+try {
+  await page.screenshot({ path: 'website/public/screenshots/soundboard.png' })
+  await page.getByText('Air Horn', { exact: true }).click({ button: 'right' })
+  await page.getByText('Edit…', { exact: true }).click()
+  await page.waitForTimeout(500)
+  await page.screenshot({ path: 'website/public/screenshots/trimmer.png' })
+  await page.getByRole('button', { name: 'Cancel', exact: true }).click()
+  await page.getByRole('button', { name: 'Voice changer', exact: true }).click()
+  await page.getByText('Robot', { exact: true }).first().click()
+  await page.waitForTimeout(500)
+  await page.screenshot({ path: 'website/public/screenshots/voice-changer.png' })
+  await page.getByRole('button', { name: 'Settings', exact: true }).click()
+  const game = page.locator('[data-output-id="game-chat"]')
+  await game.getByRole('combobox').click()
+  await page.getByRole('option', { name: 'CABLE-B Input (VB-Audio Cable B)', exact: true }).click()
+  await page.locator('[data-output-id="voice-chat"]').getByRole('switch', { name: 'Mute Voice Chat soundboard', exact: true }).click()
+  await page.getByRole('heading', { name: 'Virtual outputs', exact: true }).scrollIntoViewIfNeeded()
+  await page.waitForTimeout(500)
+  await page.screenshot({ path: 'website/public/screenshots/outputs.png' })
+  console.log('Updated website screenshots from Virtboard 0.2.0')
+} finally { await app.close() }
