@@ -25,7 +25,7 @@ jobs:
           printf 'installer-fixture' > "$RUNNER_TEMP/virtboard-data/Virtboard-Setup-0.2.0.exe"
           docker run -d --name website-test --read-only --cap-drop ALL --security-opt no-new-privileges -p 127.0.0.1:4186:8080 -v "$RUNNER_TEMP/virtboard-data:/data:ro" virtboard-website:test
           trap 'docker logs website-test; docker rm -f website-test' EXIT
-          curl --retry 10 --retry-connrefused --retry-delay 1 --fail http://127.0.0.1:4186/healthz
+          curl --retry 10 --retry-all-errors --retry-delay 1 --fail http://127.0.0.1:4186/healthz
           test "$(curl --fail --location http://127.0.0.1:4186/download)" = 'installer-fixture'
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
@@ -55,3 +55,4 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
